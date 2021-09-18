@@ -1,0 +1,129 @@
+[Save]
+ field_save=ON		//ON, OFF
+ particle_save=OFF
+ density_save=ON
+ dump_save=OFF
+
+ field_format=HDF		//present, only HDF
+ particle_format=HDF		//present, only HDF
+ density_format=HDF		//present, only HDF
+ dump_format=HDF		//present, only HDF
+
+ dump_start=10000
+ dump_save_step=10000
+
+ resolution_change=OFF		//not work
+ resolution_high=OFF		//not work
+ resolution_low=OFF		//not work
+ resolution_change_step=200	//not work
+ resolution_rate_X=1		//not work
+ resolution_rate_Y=1		//not work
+ resolution_rate_Z=1		//not work
+
+
+
+[PML]
+ pml=ON
+ pml_start=10e6			//when PML start, unit is iteration step
+ left_pml_cells=1		//not work
+ right_pml_cells=1//not work
+ up_pml_cells=20
+ down_pml_cells=5		//not work
+ front_pml_cells=5		//not work
+ back_pml_cells=5		//not work
+ pml_r=0.4
+ pml_d=0.2
+
+
+[Domain]
+
+ mode_number=2			// 2 is default
+ current_order=1		//not work
+ interpolation_order=1		//not work
+ field_type=Yee			//Yee, NoCherenkov
+ field_ionization=OFF		//ON, OFF
+
+ max_time=2600			//[minute]	not work
+ max_step=10000
+ save_step=1000
+ save_start=1000
+ center_save_step=1000		//it will save center field file.
+
+ L=2				//how many cores?
+ M=1				//not work
+ N=1				//not work
+
+ moving_domain=ON
+ moving_velocity=0.94		//moving domain velocity. 1 is C.
+
+ minX=0
+ maxX=30e-6
+ minY=0e-6			//must be 0
+ maxY=30e-6
+ minZ=-30e-6			//not work
+ maxZ=30e-6			//not work
+ lambda=0.8e-6
+ division_lambda=20		// dx is [wavelength/divisionLambda]
+ dt_ratio=0.94			// recommand below 0.96
+ dF=0.01			// Using Marder's method. Leave it.
+
+ dr_over_dz = 10		// dr/dz=10
+
+ boost_gamma=1			//not work
+ filter=0			//not work
+ filter_step=2			//not work
+
+
+[Laser]
+ wavelength=0.8e-6
+ a0=2
+ rU=4			 	//number of wave length
+ rD=4
+ flat=0
+ retard=0
+ polarity=2
+ loadPositionX=0e-5		//laser start position [m]
+ loadPositionY=0.0e-5		//laser start position [m]
+ beamWaist=10e-6
+ focus=60e-6
+
+
+[External]
+ Ex=0				//not work
+ Ey=0				//not work
+ Ez=0				//not work
+ Bx=0				//not work
+ By=0				//not work
+ Bz=0				//not work
+
+[Plasma]
+ species=Electron
+ type=Polygon
+ density=1.0e25
+ numberRZ=2		// number in cell=numberRZ*numberPhi
+ numberPhi=4
+ startIndex=0		//not work
+ temperature=0
+
+ function_mode_YZ=Polynomial
+ centerY=0.0		//for plasma channel : '0' reply flat plasma.
+ poly_coef_YZ=0.0	//for plasma channel : '0' reply flat plasma.
+
+ Xnodes=4
+ X0=10e-6
+ X1=50e-6
+ X2=50000e-6
+ X3=4000000e-6
+ Xn0=0
+ Xn1=1
+ Xn2=1
+ Xn3=1
+
+ Ynodes=3
+ Y0=0e-6
+ Y1=38e-6
+ Y2=40e-6
+ Yn0=1
+ Yn1=1
+ Yn2=0
+

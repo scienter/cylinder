@@ -1,0 +1,418 @@
+clean.c:    while(LL->next)
+clean.c:      switch (LL->type)  {
+clean.c:        if(LL->xnodes>0)
+clean.c:          free(LL->xpoint);	
+clean.c:          free(LL->xn);	
+clean.c:        if(LL->ynodes>0)
+clean.c:          free(LL->ypoint);
+clean.c:          free(LL->yn);
+clean.c:        if(LL->numDefined>0)
+clean.c:            free(LL->xPosition);
+clean.c:            free(LL->yPosition);
+clean.c:            for(i=0; i<LL->numDefined; i++)
+clean.c:              free(LL->define[i]);
+clean.c:      tmpLL=LL->next;
+clean.c:      LL->next=NULL;
+ionization.c:  while(LL->next)
+ionization.c:    rho[s]=LL->density/LL->criticalDensity;
+ionization.c:    levels[s]=LL->levels;
+ionization.c:    species[s]=LL->species;
+ionization.c:    ionFinal[s]=LL->ionFinal;
+ionization.c:    minA0[s]=LL->givenMinA0;
+ionization.c:    ionEnergy[s]=(double *)malloc(LL->levels*sizeof(double ));
+ionization.c:    W[s]=(double *)malloc(LL->levels*sizeof(double ));
+ionization.c:    prob[s]=(double *)malloc((LL->levels+1)*sizeof(double ));
+ionization.c:    prob[s][LL->levels]=1.0;
+ionization.c:    for(i=0; i<LL->levels; i++) 
+ionization.c:      ionEnergy[s][i]=LL->ionEnergy[i];
+ionization.c:    if(LL->species!=Electron && LL->ionFinal==OFF) sCnt++; else ;
+ionization.c:    LL=LL->next;
+ionization.c:  while(LL->next)
+ionization.c:    if(LL->species!=Electron && LL->ionFinal==OFF) {
+ionization.c:    LL=LL->next;
+ionization.c:      LL->levels=0;
+ionization.c:      LL->levels=1;
+ionization.c:      LL->ionEnergy=(double *)malloc(LL->levels*sizeof(double) );
+ionization.c:      LL->ionEnergy[0]=1.0;
+ionization.c:      if(species==HPlus1) LL->ionFinal=ON; else LL->ionFinal=OFF;
+ionization.c:      LL->levels=2;
+ionization.c:      LL->ionEnergy=(double *)malloc(LL->levels*sizeof(double) );
+ionization.c:      LL->ionEnergy[0]=1.808;
+ionization.c:      LL->ionEnergy[1]=4.002;
+ionization.c:      if(species==HePlus2) LL->ionFinal=ON; else LL->ionFinal=OFF;
+ionization.c:      LL->levels=6;
+ionization.c:      LL->ionEnergy=(double *)malloc(LL->levels*sizeof(double) );
+ionization.c:      LL->ionEnergy[0]=0.828;
+ionization.c:      LL->ionEnergy[1]=1.793;
+ionization.c:      LL->ionEnergy[2]=3.522;
+ionization.c:      LL->ionEnergy[3]=4.743;
+ionization.c:      LL->ionEnergy[4]=28.833;
+ionization.c:      LL->ionEnergy[5]=36.033;
+ionization.c:      if(species==CPlus6) LL->ionFinal=ON; else LL->ionFinal=OFF;
+ionization.c:      LL->levels=7;
+ionization.c:      LL->ionEnergy=(double *)malloc(LL->levels*sizeof(double) );
+ionization.c:      LL->ionEnergy[0]=1.069;
+ionization.c:      LL->ionEnergy[1]=2.177;
+ionization.c:      LL->ionEnergy[2]=3.489;
+ionization.c:      LL->ionEnergy[3]=5.697;
+ionization.c:      LL->ionEnergy[4]=7.199;
+ionization.c:      LL->ionEnergy[5]=40.598;
+ionization.c:      LL->ionEnergy[6]=49.053;
+ionization.c:      if(species==NPlus7) LL->ionFinal=ON; else LL->ionFinal=OFF;
+ionization.c:      LL->levels=10;
+ionization.c:      LL->ionEnergy=(double *)malloc(LL->levels*sizeof(double) );
+ionization.c:      LL->ionEnergy[0]=1.586;
+ionization.c:      LL->ionEnergy[1]=3.012;
+ionization.c:      LL->ionEnergy[2]=4.666;
+ionization.c:      LL->ionEnergy[3]=7.142;
+ionization.c:      LL->ionEnergy[4]=9.281;
+ionization.c:      LL->ionEnergy[5]=11.614;
+ionization.c:      LL->ionEnergy[6]=15.243;
+ionization.c:      LL->ionEnergy[7]=17.583;
+ionization.c:      LL->ionEnergy[8]=87.939;
+ionization.c:      LL->ionEnergy[9]=100.173;
+ionization.c:      if(species==NPlus7) LL->ionFinal=ON; else LL->ionFinal=OFF;
+loadBeam.c:  switch(LL->type)  {
+loadBeam.c:    if(iteration==LL->loadingStep) {
+loadBeam.c:   numPhi=LL->numberPhi; numberRZ=LL->numberRZ;
+loadBeam.c:   charge=LL->charge;
+loadBeam.c:   gamma0=LL->energy/mc2;
+loadBeam.c:   dGam=LL->spread*gamma0;
+loadBeam.c:   emitR=LL->emitR/gamma0;
+loadBeam.c:   gammaR=(1+LL->alphaR*LL->alphaR)/LL->betaR;
+loadBeam.c:   if(LL->species==Test) weightCoef=0.0; else weightCoef=1.0;	
+loadBeam.c:   distanceR=LL->alphaR/gammaR/D->lambda+LL->focalL/D->lambda;
+loadBeam.c:	density=LL->density;
+loadBeam.c:     if(LL->gaussMode==OFF) {
+loadBeam.c:       for(l=0; l<LL->xnodes-1; l++) {
+loadBeam.c:         if(posZ>=LL->xpoint[l] && posZ<LL->xpoint[l+1]) {
+loadBeam.c:            ne=(LL->xn[l+1]-LL->xn[l])/(LL->xpoint[l+1]-LL->xpoint[l])*(posZ-LL->xpoint[l])+LL->xn[l];
+loadBeam.c:	  } else if(LL->gaussMode==ON) {
+loadBeam.c:	    posZ=LL->posZ;
+loadBeam.c:	    phase=pow((z-posZ)/LL->sigZ,LL->gaussPower);
+loadBeam.c:		 printf("z=%g,posZ=%g,i=%d,LL->sigR=%g,LL->gaussPower=%g,phase=%g,ne=%g\n",z,posZ,i,LL->sigZ,LL->gaussPower,phase,ne);
+loadBeam.c:     nenergy=1.0+(z-LL->posZ)*LL->eChirp/LL->energy;
+loadBeam.c:         LL->index+=1;
+loadBeam.c:         New->index=LL->index;            
+loadPlasma.c:  switch(LL->type)  {
+loadPlasma.c:   numPhi=LL->numberPhi; numberRZ=LL->numberRZ;
+loadPlasma.c:   pz0=LL->pz0;
+loadPlasma.c:   z0=LL->z0;
+loadPlasma.c:   alpha=LL->delPz/LL->delZ;
+loadPlasma.c:   minZ=z0-LL->delZ*0.5;
+loadPlasma.c:   maxZ=z0+LL->delZ*0.5;
+loadPlasma.c:   centerX=LL->centerX;
+loadPlasma.c:   centerY=LL->centerY;
+loadPlasma.c:   gaussCoefX=LL->gaussCoefX;
+loadPlasma.c:   polyCoefX=LL->polyCoefX;
+loadPlasma.c:   gaussCoefYZ=LL->gaussCoefYZ;
+loadPlasma.c:   polyCoefYZ=LL->polyCoefYZ;
+loadPlasma.c:   modeX=LL->modeX;
+loadPlasma.c:   modeYZ=LL->modeYZ;
+loadPlasma.c:   charge=LL->charge;
+loadPlasma.c:       for(l=0; l<LL->xnodes-1; l++)
+loadPlasma.c:         for(t=0; t<LL->ynodes-1; t++)
+loadPlasma.c:           if(posX>=LL->xpoint[l] && posX<LL->xpoint[l+1] &&
+loadPlasma.c:              posY>=LL->ypoint[t] && posY<LL->ypoint[t+1])
+loadPlasma.c:             ne=((LL->xn[l+1]-LL->xn[l])/(LL->xpoint[l+1]-LL->xpoint[l])*(posX-LL->xpoint[l])+LL->xn[l]);
+loadPlasma.c:             ne*=((LL->yn[t+1]-LL->yn[t])/(LL->ypoint[t+1]-LL->ypoint[t])*(posY-LL->ypoint[t])+LL->yn[t]);
+loadPlasma.c://             ne*=LL->numberRZ;	//it is the double number of superparticles.
+loadPlasma.c:                     v1=maxwellianVelocity(LL->temperatureZ)/velocityC+v1;
+loadPlasma.c:                     v2=maxwellianVelocity(LL->temperatureR)/velocityC;
+loadPlasma.c:                     v3=maxwellianVelocity(LL->temperatureR)/velocityC;
+loadPlasma.c:                     v1=maxwellianVelocity(LL->temperatureZ)/velocityC;
+loadPlasma.c:                     v2=maxwellianVelocity(LL->temperatureR)/velocityC;
+loadPlasma.c:                     v3=maxwellianVelocity(LL->temperatureR)/velocityC;
+loadPlasma.c:                   LL->index+=1;
+loadPlasma.c:                   New->index=LL->index;            
+loadPlasma.c:       for(l=0; l<LL->xnodes-1; l++)
+loadPlasma.c:         for(t=0; t<LL->ynodes-1; t++)
+loadPlasma.c:           if(posX>=LL->xpoint[l] && posX<LL->xpoint[l+1] &&
+loadPlasma.c:              posY>=LL->ypoint[t] && posY<LL->ypoint[t+1])
+loadPlasma.c:             ne=((LL->xn[l+1]-LL->xn[l])/(LL->xpoint[l+1]-LL->xpoint[l])*(posX-LL->xpoint[l])+LL->xn[l]);
+loadPlasma.c:             ne*=((LL->yn[t+1]-LL->yn[t])/(LL->ypoint[t+1]-LL->ypoint[t])*(posY-LL->ypoint[t])+LL->yn[t]);
+loadPlasma.c:                     v1=maxwellianVelocity(LL->temperatureZ)/velocityC+v1;
+loadPlasma.c:                     v2=maxwellianVelocity(LL->temperatureR)/velocityC;
+loadPlasma.c:                     v3=maxwellianVelocity(LL->temperatureR)/velocityC;
+loadPlasma.c:                     v1=maxwellianVelocity(LL->temperatureZ)/velocityC;
+loadPlasma.c:                     v2=maxwellianVelocity(LL->temperatureR)/velocityC;
+loadPlasma.c:                     v3=maxwellianVelocity(LL->temperatureR)/velocityC;
+loadPlasma.c:                   LL->index+=1;
+loadPlasma.c:                   New->index=LL->index;            
+loadPlasma_crystal.c:   weight=1.0/LL->numberInCell;
+loadPlasma_crystal.c:   for(l=0; l<LL->xnodes-1; l++)
+loadPlasma_crystal.c:     if(LL->xn[l+1]-LL->xn[l]>0 || LL->xn[l+1]-LL->xn[l]<0)
+loadPlasma_crystal.c:       n0=LL->xn[l];
+loadPlasma_crystal.c:       n1=LL->xn[l+1];
+loadPlasma_crystal.c:       nc=LL->numberInCell;
+loadPlasma_crystal.c:       xL=LL->xpoint[l+1]-LL->xpoint[l];
+loadPlasma_crystal.c:       x=(sqrt(n0*n0*(np-1)*(np-1)+(n1+n0)*(n1-n0)*cnt*(np-1))-n0*(np-1))/(n1-n0)/(np-1)*xL+LL->xpoint[l]-D->minXSub;
+loadPlasma_crystal.c:       space=1.0/LL->numberInCell*LL->xn[l];
+loadPlasma_crystal.c:          x=(sqrt(n0*n0*(np-1)*(np-1)+(n1+n0)*(n1-n0)*cnt*(np-1))-n0*(np-1))/(n1-n0)/(np-1)*xL+LL->xpoint[l]-D->minXSub+refX;
+loadPlasma_crystal.c:             v1=maxwellianVelocity(LL->temperature)/velocityC;
+loadPlasma_crystal.c:             v2=maxwellianVelocity(LL->temperature)/velocityC;
+loadPlasma_crystal.c:             v3=maxwellianVelocity(LL->temperature)/velocityC;
+loadPlasma_crystal.c:             LL->index++;
+loadPlasma_crystal.c:             New->index=LL->index;            
+loadPlasma_crystal.c:        nc=LL->numberInCell*LL->xn[l];
+loadPlasma_crystal.c:        leftIndex=(int)(LL->xpoint[l]-D->minXSub);
+loadPlasma_crystal.c:        rightIndex=(int)(LL->xpoint[l+1]-D->minXSub);
+loadPlasma_crystal.c:             v1=maxwellianVelocity(LL->temperature)/velocityC;
+loadPlasma_crystal.c:             v2=maxwellianVelocity(LL->temperature)/velocityC;
+loadPlasma_crystal.c:             v3=maxwellianVelocity(LL->temperature)/velocityC;
+loadPlasma_crystal.c:             LL->index++;
+loadPlasma_crystal.c:             New->index=LL->index;            
+loadPlasma_crystal.c:   weight=1.0/LL->numberInCell;
+loadPlasma_crystal.c://   while(LL->next)
+loadPlasma_crystal.c:     for(l=0; l<LL->xnodes-1; l++)
+loadPlasma_crystal.c:       if(position>=LL->xpoint[l] && position<LL->xpoint[l+1])
+loadPlasma_crystal.c:         nc=((LL->xn[l+1]-LL->xn[l])/(LL->xpoint[l+1]-LL->xpoint[l])
+loadPlasma_crystal.c:            *(position-LL->xpoint[l])+LL->xn[l]);
+loadPlasma_crystal.c:         nc*=LL->numberInCell;	//it is the double number of superparticles.
+loadPlasma_crystal.c:           v1=maxwellianVelocity(LL->temperature)/velocityC;
+loadPlasma_crystal.c:           v2=maxwellianVelocity(LL->temperature)/velocityC;
+loadPlasma_crystal.c:           v3=maxwellianVelocity(LL->temperature)/velocityC;
+loadPlasma_crystal.c:           LL->index++;
+loadPlasma_crystal.c:           New->index=LL->index;            
+loadPlasma_crystal.c://     LL=LL->next;
+main.c:      while(LL->next)      {
+main.c:        LL=LL->next;
+main.c:      while(LL->next)      {
+main.c:        if(LL->pair==ON) {
+main.c:        LL=LL->next; s++;
+main.c:       while(LL->next)      {
+main.c:         LL=LL->next;
+main.c:             while(LL->next)      {
+main.c:               LL=LL->next; s++;
+main.c:             while(LL->next)      {
+main.c:               if(LL->pair==ON)
+main.c:               LL=LL->next;  s++;
+main.c:             while(LL->next)      {
+main.c:               LL=LL->next; s++;
+main.c:             while(LL->next)      {
+main.c:               if(LL->pair==ON)
+main.c:               LL=LL->next;  s++;
+parameterSetting.c:      LL->next=New;
+parameterSetting.c:      LL=LL->next;
+parameterSetting.c:     LL->type = whatPlasmaType(name);
+parameterSetting.c:     if(D->boostOn==ON) LL->type = BoostFrame; else ;
+parameterSetting.c:   } else LL->type=0;
+parameterSetting.c:   if(LL->type>0)
+parameterSetting.c:      wp=sqrt(LL->density*eCharge*eCharge/eMass/eps0);
+parameterSetting.c:      if(FindParameters("Plasma",rank,"species",input,name)) LL->species = whatSpecies(name);
+parameterSetting.c:      else  LL->species = 0;
+parameterSetting.c:      if(FindParameters("Plasma",rank,"pair",input,name)) LL->pair=whatONOFF(name);
+parameterSetting.c:      else LL->pair=OFF;
+parameterSetting.c:      if(FindParameters("Plasma",rank,"numberRZ",input,str)) LL->numberRZ=atoi(str);
+parameterSetting.c:      if(FindParameters("Plasma",rank,"numberPhi",input,str)) LL->numberPhi=atoi(str);
+parameterSetting.c:      if(FindParameters("Plasma",rank,"startIndex",input,str)) LL->index=atoi(str);
+parameterSetting.c:      else LL->index=0;
+parameterSetting.c:      if(FindParameters("Plasma",rank,"temperature_r",input,str)) LL->temperatureR=atof(str);
+parameterSetting.c:      else   LL->temperatureR=0.0;	
+parameterSetting.c:      if(FindParameters("Plasma",rank,"temperature_z",input,str)) LL->temperatureZ=atof(str);
+parameterSetting.c:      else   LL->temperatureZ=0.0;	
+parameterSetting.c:      if(FindParameters("Plasma",rank,"given_min_px",input,str)) LL->givenMinPx = atof(str);
+parameterSetting.c:      else  LL->givenMinPx = -1e9;
+parameterSetting.c:      LL->mass=whatMass(LL->species);
+parameterSetting.c:      LL->charge=whatCharge(LL->species);
+parameterSetting.c:      LL->criticalDensity=eps0*eMass*D->omega*D->omega/eCharge/eCharge;
+parameterSetting.c://      LL->superP=LL->density*D->lambda*D->dx*D->lambda*D->dy*D->lambda*D->dz/LL->numberInCell;
+parameterSetting.c:      ionizationSetup(LL,LL->species);
+parameterSetting.c:         LL->givenMinA0 = atof(str);
+parameterSetting.c:      else  LL->givenMinA0 = 0.0;
+parameterSetting.c:      switch (LL->type)  {
+parameterSetting.c:          LL->density=atof(str);
+parameterSetting.c:          LL->density*=D->gamma;
+parameterSetting.c:        if(FindParameters("Plasma",rank,"Xnodes",input,str)) LL->xnodes=atoi(str);
+parameterSetting.c:        if(LL->xnodes>0)
+parameterSetting.c:          LL->xpoint = (double *)malloc(LL->xnodes*sizeof(double));
+parameterSetting.c:          LL->xn = (double *)malloc(LL->xnodes*sizeof(double));   
+parameterSetting.c:          for(i=0; i<LL->xnodes; i++)
+parameterSetting.c:              LL->xpoint[i] = atof(str)/D->gamma/D->lambda/D->dz;
+parameterSetting.c:              LL->xn[i] = atof(str);
+parameterSetting.c:          LL->delZ=LL->xpoint[LL->xnodes-1]-LL->xpoint[0];
+parameterSetting.c:          LL->z0=(LL->xpoint[LL->xnodes-1]+LL->xpoint[0])*0.5;
+parameterSetting.c:          if(FindParameters("Plasma",rank,"Ynodes",input,str)) LL->ynodes=atoi(str);
+parameterSetting.c:          if(LL->ynodes>0)
+parameterSetting.c:            LL->ypoint = (double *)malloc(LL->ynodes*sizeof(double));
+parameterSetting.c:            LL->yn = (double *)malloc(LL->ynodes*sizeof(double));   
+parameterSetting.c:            for(i=0; i<LL->ynodes; i++)
+parameterSetting.c:                LL->ypoint[i] = atof(str)/D->lambda/D->dr;
+parameterSetting.c:                LL->yn[i] = atof(str);
+parameterSetting.c:          LL->centerX=atof(str)/D->lambda/D->dz;
+parameterSetting.c:        else   LL->centerX=0.0;	
+parameterSetting.c:        LL->centerY=0.0;	
+parameterSetting.c:          LL->gaussCoefX=atof(str)/D->lambda/D->dz;
+parameterSetting.c:        else   LL->gaussCoefX=1.0;
+parameterSetting.c:          LL->polyCoefX=atof(str)/D->lambda/D->dz;
+parameterSetting.c:        else   LL->polyCoefX=0.0;	
+parameterSetting.c:          LL->modeX=whatFunctionMode(str);
+parameterSetting.c:        else   LL->modeX=0;	
+parameterSetting.c:          LL->modeYZ=whatFunctionMode(str);
+parameterSetting.c:        else   LL->modeYZ=0;	
+parameterSetting.c:            LL->centerY=atof(str)/D->lambda/D->dr;
+parameterSetting.c:          else   LL->centerY=0.0;	
+parameterSetting.c:            LL->gaussCoefYZ=atof(str)/D->lambda/D->dr;
+parameterSetting.c:          else   LL->gaussCoefYZ=1.0;	
+parameterSetting.c:            LL->polyCoefYZ=atof(str)*D->lambda*D->dr*D->lambda*D->dr;
+parameterSetting.c:          else   LL->polyCoefYZ=0.0;	
+parameterSetting.c:        if(FindParameters("Plasma",rank,"beam_pz_range",input,str)) LL->delPz=atof(str);
+parameterSetting.c:        else   LL->delPz=0.0;	
+parameterSetting.c:        if(FindParameters("Plasma",rank,"beam_pz",input,str)) LL->pz0=atof(str);
+parameterSetting.c:        else   LL->pz0=0.0;	
+parameterSetting.c:        if(FindParameters("Plasma",rank,"loading_step",input,str)) LL->loadingStep=atoi(str);
+parameterSetting.c:        else LL->loadingStep=0;
+parameterSetting.c:        if(FindParameters("Plasma",rank,"energy",input,str)) LL->energy=atof(str);
+parameterSetting.c:        if(FindParameters("Plasma",rank,"energy_spread",input,str)) LL->spread=atof(str);
+parameterSetting.c:        if(FindParameters("Plasma",rank,"energy_chirp",input,str)) LL->eChirp=atof(str);
+parameterSetting.c:        else LL->eChirp=0.0;
+parameterSetting.c:        if(FindParameters("Plasma",rank,"norm_emittance_r",input,str)) LL->emitR=atof(str)*1e-6;
+parameterSetting.c:        if(FindParameters("Plasma",rank,"beta_r",input,str)) LL->betaR=atof(str);
+parameterSetting.c:        if(FindParameters("Plasma",rank,"alpha_r",input,str)) LL->alphaR=atof(str);
+parameterSetting.c:        if(FindParameters("Plasma",rank,"position_z",input,str)) LL->posZ=atof(str);
+parameterSetting.c:        else LL->posZ=(D->maxX-D->minX)*0.5*D->lambda;
+parameterSetting.c:        if(FindParameters("Plasma",rank,"focal_length",input,str)) LL->focalL=atof(str);
+parameterSetting.c:		  else LL->focalL=0.0;
+parameterSetting.c:        if(FindParameters("Plasma",rank,"peak_current",input,str)) LL->peakCurr=atof(str);
+parameterSetting.c:        gamma0=LL->energy/mc2;
+parameterSetting.c:        emitR=LL->emitR/gamma0;
+parameterSetting.c:        gammaR=(1+LL->alphaR*LL->alphaR)/LL->betaR;
+parameterSetting.c:        LL->density=LL->peakCurr*0.5/M_PI/sigR/sigR/velocityC/eCharge;
+parameterSetting.c:          printf("density=%g,sigR=%g,gammaR=%g,emitR=%g,alphaR=%g,loading_step=%d\n",LL->density,sigR,gammaR,emitR,LL->alphaR,LL->loadingStep);
+parameterSetting.c:        if(FindParameters("Plasma",rank,"gaussian_ONOFF",input,str)) LL->gaussMode=whatONOFF(str);
+parameterSetting.c:	     else LL->gaussMode=OFF;
+parameterSetting.c:		  if(LL->gaussMode==ON) {
+parameterSetting.c:		    if(FindParameters("Plasma",rank,"gaussian_power",input,str)) LL->gaussPower=atof(str);
+parameterSetting.c:		    else LL->gaussPower=2;
+parameterSetting.c:		    if(FindParameters("Plasma",rank,"gaussian_sigma_z",input,str)) LL->sigZ=atof(str);
+parameterSetting.c:		    else LL->sigZ=1.0;
+parameterSetting.c:          if(FindParameters("Plasma",rank,"Xnodes",input,str)) LL->xnodes=atoi(str);
+parameterSetting.c:          else  LL->xnodes=0;
+parameterSetting.c:          if(LL->xnodes>0) {
+parameterSetting.c:            LL->xpoint = (double *)malloc(LL->xnodes*sizeof(double));
+parameterSetting.c:            LL->xn = (double *)malloc(LL->xnodes*sizeof(double));
+parameterSetting.c:            for(i=0; i<LL->xnodes; i++)  {
+parameterSetting.c:                LL->xpoint[i] = atof(str)/D->gamma/D->lambda/D->dz;
+parameterSetting.c:              if(FindParameters("Plasma",rank,name,input,str))LL->xn[i] = atof(str);
+parameterSetting.c:        if(FindParameters("Plasma",rank,"num_energy_interval",input,str)) LL->numGam=atoi(str);                              else  LL->numGam=1;
+parameterSetting.c:          LL->defineMode=whatDefineMode(str);
+parameterSetting.c:        else   LL->defineMode=byNumber;	
+parameterSetting.c:          LL->numDefined=atoi(str);
+parameterSetting.c:        else   LL->numDefined=0;	
+parameterSetting.c:        if(LL->defineMode==byDensity)
+parameterSetting.c:            LL->minX=atof(str);
+parameterSetting.c:            LL->maxX=atof(str);
+parameterSetting.c:              LL->minY=atof(str);
+parameterSetting.c:              LL->maxY=atof(str);
+parameterSetting.c:              LL->minZ=atof(str);
+parameterSetting.c:              LL->maxZ=atof(str);
+parameterSetting.c:          LL->xLengDef=atof(str)/D->lambda;
+parameterSetting.c:        else   LL->xLengDef=0.0;
+parameterSetting.c:        if(LL->numDefined>0)	
+parameterSetting.c:          LL->xPosition=(double *)malloc(LL->numDefined*sizeof(double));
+parameterSetting.c:          shareDouble=(double *)malloc(LL->numDefined*sizeof(double));
+parameterSetting.c:          for(i=0; i<LL->numDefined; i++)
+parameterSetting.c:            if(LL->defineMode==byNumber)
+parameterSetting.c:                LL->xPosition[i]=atof(str)/D->lambda;
+parameterSetting.c:            else if(LL->defineMode==byDensity)
+parameterSetting.c:                shareDouble[i]=(LL->minX+randomV()*(LL->maxX-LL->minX))/D->lambda;
+parameterSetting.c:          if(LL->defineMode==byDensity)
+parameterSetting.c:            MPI_Bcast(shareDouble,LL->numDefined,MPI_DOUBLE,0,MPI_COMM_WORLD);
+parameterSetting.c:            for(i=0; i<LL->numDefined; i++)
+parameterSetting.c:              LL->xPosition[i]=shareDouble[i];
+parameterSetting.c:            LL->yLengDef=atof(str)/D->lambda;
+parameterSetting.c:          else   LL->yLengDef=0.0;	
+parameterSetting.c:          if(LL->numDefined>0)
+parameterSetting.c:            LL->yPosition=(double *)malloc(LL->numDefined*sizeof(double));
+parameterSetting.c:            shareDouble=(double *)malloc(LL->numDefined*sizeof(double));
+parameterSetting.c:            for(i=0; i<LL->numDefined; i++)
+parameterSetting.c:              if(LL->defineMode==byNumber)
+parameterSetting.c:                  LL->yPosition[i]=atof(str)/D->lambda;
+parameterSetting.c:              else if(LL->defineMode==byDensity)
+parameterSetting.c:                  shareDouble[i]=(LL->minY+randomV()*(LL->maxY-LL->minY))/D->lambda;
+parameterSetting.c:            if(LL->defineMode==byDensity)
+parameterSetting.c:              MPI_Bcast(shareDouble,LL->numDefined,MPI_DOUBLE,0,MPI_COMM_WORLD);
+parameterSetting.c:              for(i=0; i<LL->numDefined; i++)
+parameterSetting.c:                LL->yPosition[i]=shareDouble[i];
+parameterSetting.c:            LL->zLengDef=atof(str)/D->lambda;
+parameterSetting.c:          else   LL->zLengDef=0.0;	
+parameterSetting.c:          if(LL->numDefined>0)
+parameterSetting.c:            LL->zPosition=(double *)malloc(LL->numDefined*sizeof(double));
+parameterSetting.c:            shareDouble=(double *)malloc(LL->numDefined*sizeof(double));
+parameterSetting.c:            for(i=0; i<LL->numDefined; i++)
+parameterSetting.c:              if(LL->defineMode==byNumber)
+parameterSetting.c:                  LL->zPosition[i]=atof(str)/D->lambda;
+parameterSetting.c:              else if(LL->defineMode==byDensity)
+parameterSetting.c:                  shareDouble[i]=(LL->minZ+randomV()*(LL->maxZ-LL->minZ))/D->lambda;
+parameterSetting.c:            if(LL->defineMode==byDensity)
+parameterSetting.c:              MPI_Bcast(shareDouble,LL->numDefined,MPI_DOUBLE,0,MPI_COMM_WORLD);
+parameterSetting.c:              for(i=0; i<LL->numDefined; i++)
+parameterSetting.c:                LL->zPosition[i]=shareDouble[i];
+parameterSetting.c:          LL->numDefPtcls=(int)(LL->xLengDef*LL->yLengDef/D->dx/D->dy*LL->numberInCell);
+parameterSetting.c:          cnt=LL->numDefPtcls;
+parameterSetting.c:          if(LL->numDefined>0)
+parameterSetting.c:            LL->define=(double **)malloc(LL->numDefined*sizeof(double *));
+parameterSetting.c:            for(i=0; i<LL->numDefined; i++)
+parameterSetting.c:              LL->define[i]=(double *)malloc((cnt*2)*sizeof(double ));
+parameterSetting.c:            for(i=0; i<LL->numDefined; i++)
+parameterSetting.c:                LL->define[i][n]=LL->xPosition[i]-0.5*LL->xLengDef+tmp*LL->xLengDef;
+parameterSetting.c:                if(LL->define[i][n]>max) max=LL->define[i][n];
+parameterSetting.c:                if(LL->define[i][n]<min) min=LL->define[i][n];
+parameterSetting.c:                LL->define[i][n+cnt]=LL->yPosition[i]-0.5*LL->yLengDef+tmp*LL->yLengDef;
+parameterSetting.c:          LL->numDefPtcls=(int)(LL->xLengDef*LL->yLengDef*LL->zLengDef/D->dx/D->dy/D->dz*LL->numberInCell);
+parameterSetting.c:          cnt=LL->numDefPtcls;
+parameterSetting.c:          if(LL->numDefined>0)
+parameterSetting.c:            LL->define=(double **)malloc(LL->numDefined*sizeof(double *));
+parameterSetting.c:            for(i=0; i<LL->numDefined; i++)
+parameterSetting.c:              LL->define[i]=(double *)malloc((LL->numDefPtcls*3)*sizeof(double ));
+parameterSetting.c:            for(i=0; i<LL->numDefined; i++)
+parameterSetting.c:                LL->define[i][n]=LL->xPosition[i]-0.5*LL->xLengDef+tmp*LL->xLengDef;
+parameterSetting.c:                if(LL->define[i][n]>max) max=LL->define[i][n];
+parameterSetting.c:                if(LL->define[i][n]<min) min=LL->define[i][n];
+parameterSetting.c:                LL->define[i][n+cnt]=LL->yPosition[i]-0.5*LL->yLengDef+tmp*LL->yLengDef;
+parameterSetting.c:                LL->define[i][n+2*cnt]=LL->zPosition[i]-0.5*LL->zLengDef+tmp*LL->zLengDef;
+parameterSetting.c://        LL->maxLoadTime=(int)((max+tmpInt)*D->divisionLambda);
+parameterSetting.c://        LL->minLoadTime=(int)((min-tmpInt)*D->divisionLambda);
+parameterSetting.c:          LL->minLoadTime=atoi(str);
+parameterSetting.c:        else   LL->minLoadTime=0;
+parameterSetting.c:          LL->maxLoadTime=atoi(str);
+parameterSetting.c:        else   LL->maxLoadTime=0;
+parameterSetting.c:   return LL->type;
+particlePush.c:    while(LL->next)
+particlePush.c:       mass[s]=LL->mass;
+particlePush.c://       charge[s]=LL->charge;
+particlePush.c:       LL=LL->next;
+saveDensityHDF.c:    while(LL->next)  
+saveDensityHDF.c://      rho0[s]=LL->criticalDensity*LL->density;
+saveDensityHDF.c:      coef=LL->criticalDensity;
+saveDensityHDF.c:      LL=LL->next;
+saveFile.c:    while(LL->next)  {
+saveFile.c:      minPx=LL->givenMinPx;
+saveFile.c:      density=LL->density;
+saveFile.c:      LL=LL->next;
+saveFile.c:  while(LL->next)
+saveFile.c:    minPz[s]=LL->givenMinPx;
+saveFile.c:    LL=LL->next;
+solveCharge.c:  while(LL->next)      {
+solveCharge.c:    LL=LL->next; s++;
+solveCharge.c:  while(LL->next)      {
+solveCharge.c:    LL=LL->next; s++;
+solveCharge.c:  rho0=LL->density/LL->criticalDensity;
+updateCurrent.c:    while(LL->next) {
+updateCurrent.c:       coeff[s]=LL->density/LL->criticalDensity;
+updateCurrent.c:       LL=LL->next;
+updateCurrent.c:    while(LL->next) {
+updateCurrent.c:       coeff[s]=LL->density/LL->criticalDensity;
+updateCurrent.c:       LL=LL->next;
+updateCurrent.c20200703.c:    while(LL->next) {
+updateCurrent.c20200703.c:       coeff[s]=LL->density/LL->criticalDensity;
+updateCurrent.c20200703.c:       LL=LL->next;
+updateCurrent.c20200703.c:    while(LL->next) {
+updateCurrent.c20200703.c:       coeff[s]=LL->density/LL->criticalDensity;
+updateCurrent.c20200703.c:       LL=LL->next;
+updateCurrent.c20200704.c:    while(LL->next) {
+updateCurrent.c20200704.c:       coeff[s]=LL->density/LL->criticalDensity;
+updateCurrent.c20200704.c:       LL=LL->next;
+updateCurrent.c20200704.c:    while(LL->next) {
+updateCurrent.c20200704.c:       coeff[s]=LL->density/LL->criticalDensity;
+updateCurrent.c20200704.c:       LL=LL->next;
