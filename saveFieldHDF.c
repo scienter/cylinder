@@ -220,15 +220,15 @@ void saveEFieldHDF(Domain *D,int iteration)
     saveFieldComp(D->EpI,name,"/EpI",nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
 
 //    calCenter(D,data,D->BzNowR,-1,0,istart,iend,jstart,jend,numMode);
-    saveFieldComp(D->BzR,name,"/BzR",nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
+    saveFieldComp(D->BzNowR,name,"/BzR",nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
 //    calCenter(D,data,D->BzNowI,-1,0,istart,iend,jstart,jend,numMode);
-    saveFieldComp(D->BzI,name,"/BzI",nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
+    saveFieldComp(D->BzNowI,name,"/BzI",nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
 //    calCenter(D,data,D->BrNowR,0,-1,istart,iend,jstart,jend,numMode);
-    saveFieldComp(D->BrR,name,"/BrR",nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
+    saveFieldComp(D->BrNowR,name,"/BrR",nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
 //    calCenter(D,data,D->BrNowI,0,-1,istart,iend,jstart,jend,numMode);
-    saveFieldComp(D->BrI,name,"/BrI",nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
-    saveFieldComp(D->BpR,name,"/BpR",nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
-    saveFieldComp(D->BpI,name,"/BpI",nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
+    saveFieldComp(D->BrNowI,name,"/BrI",nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
+    saveFieldComp(D->BpNowR,name,"/BpR",nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
+    saveFieldComp(D->BpNowI,name,"/BpI",nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
 
     saveFieldComp(D->FR,name,"/FR",nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
     saveFieldComp(D->FI,name,"/FI",nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);

@@ -33,6 +33,9 @@ typedef struct _Domain
 {
    int dimension;
    int filter,filterIter;
+	int filterEr,filterEp,filterEz,filterBr,filterBp,filterBz;
+	int filterPr,filterPl,filterSr,filterSl;
+	int consCheck;
 
    int fieldType;
    int currentType,currentCons;
@@ -163,7 +166,7 @@ typedef struct _Domain
 
    //PML
    int pml;
-   int pmlStart;
+   int pmlStart,centerTreatment;
    int pmlCellRight,pmlCellLeft;   
    int pmlCellUp;   
 //   struct _PML ***upml,***lpml; 
@@ -307,4 +310,3 @@ void filter_current(Domain *D,double ***val,double ***J,int iter);
 void MPI_filter_Xminus(Domain *D,double ***f1,int ny,int share,int m);
 void MPI_filter_Xplus(Domain *D,double ***f1,int ny,int share,int m);
 void saveDensityProfile(Domain *D);
-void checkEnergyCons(Domain *D,int iteration);

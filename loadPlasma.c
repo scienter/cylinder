@@ -168,13 +168,13 @@ void loadPolygonPlasma(Domain *D,LoadList *LL,int s,int iteration,int istart,int
                  
                    z=i+positionZ-istart+minZSub;
                    if(z>minZ && z<maxZ) {
-                     v1=maxwellianVelocity(LL->temperatureZ)/velocityC;
-                     v2=maxwellianVelocity(LL->temperatureR)/velocityC;
-                     v3=maxwellianVelocity(LL->temperatureR)/velocityC;
+                     v1=maxwellianVelocity(LL->temperature)/velocityC;
+                     v2=maxwellianVelocity(LL->temperature)/velocityC;
+                     v3=maxwellianVelocity(LL->temperature)/velocityC;
                    } else {
-                     v1=maxwellianVelocity(LL->temperatureZ)/velocityC;
-                     v2=maxwellianVelocity(LL->temperatureR)/velocityC;
-                     v3=maxwellianVelocity(LL->temperatureR)/velocityC;
+                     v1=maxwellianVelocity(LL->temperature)/velocityC;
+                     v2=maxwellianVelocity(LL->temperature)/velocityC;
+                     v3=maxwellianVelocity(LL->temperature)/velocityC;
                    }
                    New->pz=v1;      New->px=v2;       New->py=v3;
                    D->index+=1;

@@ -358,24 +358,38 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
        for(j=0; j<jend+3; j++)
          Bp[i][j]=Er[i][j]*beta0;
 
+	  int shift=-0;
      switch(D->fieldType)  {
      case Yee :
      case NoCherenkov :
-       for(i=istart-1; i<iend+2; i++) 
-         for(j=jstart; j<jend+2; j++) {
-           D->EzR[0][i][j]+=0.5*(Ez[i-1][j]+Ez[i][j])*unitE;
-           D->ErR[0][i][j]-=0.5*(Er[i-1][j]+Er[i-1][j+1])*unitE;
-           D->BpR[0][i][j]-=0.5*(Bp[i-1][j]+Bp[i-1][j+1])*unitE;
+       for(i=istart-1; i<iend+3; i++) 
+         for(j=jstart; j<jend+3; j++) {
+           D->EzR[0][i][j]+=Ez[i][j]*unitE;
+           D->ErR[0][i][j]-=Er[i][j]*unitE;
+           D->BpR[0][i][j]-=Bp[i][j]*unitE;
+//           D->EzR[0][i][j]+=0.5*(Ez[i-1][j]+Ez[i][j])*unitE;
+//           D->ErR[0][i][j]-=0.5*(Er[i-1][j]+Er[i-1][j+1])*unitE;
+//           D->BpR[0][i][j]-=0.5*(Bp[i-1][j]+Bp[i-1][j+1])*unitE;
 	 }
        break;
      case Split :
-       for(i=istart-1; i<iend+2; i++) 
-         for(j=jstart; j<jend+2; j++) {
+       for(i=istart-1; i<iend+3; i++) 
+         for(j=jstart; j<jend+3; j++) {
            D->EzR[0][i][j]+=Ez[i][j]*unitE;				
-           D->PrR[0][i][j]-=0.5*(Er[i][j]+Bp[i][j]+Er[i][j+1]+Bp[i][j+1])*unitE;
-           D->EzCR[0][i][j]+=Ez[i-1][j]*unitE;				
-           D->PrCR[0][i][j]-=0.5*(Er[i-1][j]+Bp[i-1][j]+Er[i-1][j+1]+Bp[i-1][j+1])*unitE;
-	 }
+           D->PrR[0][i][j]-=(Er[i][j]+Bp[i][j])*unitE;
+           D->PlR[0][i][j]-=(Er[i][j]-Bp[i][j])*unitE;
+//           D->PrR[0][i][j]-=0.5*(Er[i][j]+Bp[i][j]+Er[i][j+1]+Bp[i][j+1])*unitE;
+//           D->PlR[0][i][j]-=0.5*(Er[i][j]-Bp[i][j]+Er[i][j+1]-Bp[i][j+1])*unitE;
+	 		}
+       for(i=istart-1; i<iend+3; i++) 
+         for(j=jstart; j<jend+3; j++) {
+           D->EzCR[0][i][j]+=Ez[i][j]*unitE;				
+           D->PrCR[0][i][j]-=(Er[i][j]+Bp[i][j])*unitE;
+           D->PlCR[0][i][j]-=(Er[i][j]-Bp[i][j])*unitE;
+//           D->EzCR[0][i][j]=0.5*(D->EzR[0][i][j]+D->EzR[0][i+shift][j]);				
+//           D->PrCR[0][i][j]=0.5*(D->PrR[0][i][j]+D->PrR[0][i+shift][j]);				
+//           D->PlCR[0][i][j]=0.5*(D->PlR[0][i][j]+D->PlR[0][i+shift][j]);				
+	 		}
        break;
      }	
 

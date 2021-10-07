@@ -170,9 +170,9 @@ void saveCoordHDF(Domain *D,char *fileName)
 
     dimx[0]=nx;      dimy[0]=ny;
     xtic=(double *)malloc(nx*sizeof(double));
-    for(i=0;i<nx;i++) xtic[i]=(i+D->minXDomain)*D->lambda*D->dz;
+    for(i=0;i<nx;i++) xtic[i]=(i+0.5+D->minXDomain)*D->lambda*D->dz;
     ytic=(double *)malloc(ny*sizeof(double));
-    for(i=0;i<ny;i++) ytic[i]=(i+D->minYDomain)*D->lambda*D->dr;
+    for(i=0;i<ny;i++) ytic[i]=(i+0.5+D->minYDomain)*D->lambda*D->dr;
     for(ii=0; ii<2; ii++)
     {
       if(ii==0) filespace=H5Screate_simple(1,dimy,NULL);

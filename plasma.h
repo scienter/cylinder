@@ -102,7 +102,7 @@ typedef struct _LoadList  {
    double mass;
    int charge;
    
-   double temperatureR, temperatureZ;
+   double temperature;
    
    //applying function
    double centerX;

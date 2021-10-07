@@ -61,11 +61,6 @@ void parameterSetting(Domain *D,External *Ext, char *input)
      fail=1;
    }
 
-   //low pass filter
-   if(FindParameters("Domain",1,"filter",input,str)) D->filter=whatONOFF(str); else D->filter=OFF;
-   if(FindParameters("Domain",1,"filter_iteration",input,str)) D->filterIter=atoi(str); else D->filterIter=1e5;
-   if(D->filterIter==0) D->filterIter=1e5; else ;
-
    //Field Type
    if(FindParameters("Domain",1,"field_type",input,str)) D->fieldType=whatFieldType(str);
    else { printf("in [Domain], field_type=?  (Split/Yee/NoCherenkov)\n"); fail=1; }
@@ -79,6 +74,30 @@ void parameterSetting(Domain *D,External *Ext, char *input)
    }
    if(FindParameters("Domain",1,"dF",input,str)) D->dF=atof(str);
    else  D->dF=0.0;
+
+	//low pass filter
+	if(FindParameters("Domain",1,"filter",input,str)) D->filter=whatONOFF(str); else D->filter=OFF;
+	switch (D->fieldType) {		// For only laser axis grids
+	case Yee :
+   	if(FindParameters("Domain",1,"filter_Er",input,str)) D->filterEr=whatONOFF(str); else D->filterEr=OFF;
+	   if(FindParameters("Domain",1,"filter_Ep",input,str)) D->filterEp=whatONOFF(str); else D->filterEp=OFF;
+   	if(FindParameters("Domain",1,"filter_Ez",input,str)) D->filterEz=whatONOFF(str); else D->filterEz=OFF;
+	   if(FindParameters("Domain",1,"filter_Br",input,str)) D->filterBr=whatONOFF(str); else D->filterBr=OFF;
+	   if(FindParameters("Domain",1,"filter_Bp",input,str)) D->filterBr=whatONOFF(str); else D->filterBp=OFF;
+   	if(FindParameters("Domain",1,"filter_Bz",input,str)) D->filterBz=whatONOFF(str); else D->filterBz=OFF;
+		break;
+	case Split :
+		if(FindParameters("Domain",1,"filter_Pr",input,str)) D->filterPr=whatONOFF(str); else D->filterPr=OFF;
+	   if(FindParameters("Domain",1,"filter_Pl",input,str)) D->filterPl=whatONOFF(str); else D->filterPl=OFF;
+   	if(FindParameters("Domain",1,"filter_Ez",input,str)) D->filterEz=whatONOFF(str); else D->filterEz=OFF;
+	   if(FindParameters("Domain",1,"filter_Sr",input,str)) D->filterSr=whatONOFF(str); else D->filterSr=OFF;
+	   if(FindParameters("Domain",1,"filter_Sl",input,str)) D->filterSl=whatONOFF(str); else D->filterSl=OFF;
+   	if(FindParameters("Domain",1,"filter_Bz",input,str)) D->filterBz=whatONOFF(str); else D->filterBz=OFF;
+		break;
+	}
+   if(FindParameters("Domain",1,"filter_iteration",input,str)) D->filterIter=atoi(str); else D->filterIter=1e5;
+   if(D->filterIter==0) D->filterIter=1e5; else ;
+
    //Current Type
    if(FindParameters("Domain",1,"current_order",input,str)) D->currentType=atoi(str);
    else  
@@ -99,6 +118,8 @@ void parameterSetting(Domain *D,External *Ext, char *input)
    D->beta=sqrt(1-1.0/D->gamma/D->gamma);
 
    //Domain parameter setting
+   if(FindParameters("Domain",1,"conservation_check",input,str)) D->consCheck=whatONOFF(str);
+   else  D->consCheck=OFF;
    if(FindParameters("Domain",1,"max_time",input,str)) D->maxTime=atoi(str);
    else  D->maxTime=525600;
    if(FindParameters("Domain",1,"max_step",input,str)) D->maxStep=atoi(str);
@@ -312,6 +333,8 @@ void parameterSetting(Domain *D,External *Ext, char *input)
    else  D->pmlCellUp=1;
    if(FindParameters("PML",1,"pml_start",input,str))    D->pmlStart=atoi(str);
    else  { printf("In [PML], pml_start=? [what step]\n"); fail=1; }
+	if(D->pml==OFF) D->centerTreatment=1e6;
+	else            D->centerTreatment=D->pmlStart;
    if(FindParameters("PML",1,"right_pml_cells",input,str))  D->pmlCellRight=atoi(str);
    else  D->pmlCellRight=1;
    if(FindParameters("PML",1,"left_pml_cells",input,str))   D->pmlCellLeft=atoi(str);
@@ -710,10 +733,8 @@ int findLoadParameters(int rank, LoadList *LL,Domain *D,char *input)
       else  { printf("in [Plasma], numberRZ=? \n"); fail=1; }
       if(FindParameters("Plasma",rank,"numberPhi",input,str)) LL->numberPhi=atoi(str);
       else  { printf("in [Plasma], numberPhi=? \n"); fail=1; }
-      if(FindParameters("Plasma",rank,"temperature_r",input,str)) LL->temperatureR=atof(str);
-      else   LL->temperatureR=0.0;	
-      if(FindParameters("Plasma",rank,"temperature_z",input,str)) LL->temperatureZ=atof(str);
-      else   LL->temperatureZ=0.0;	
+      if(FindParameters("Plasma",rank,"temperature",input,str)) LL->temperature=atof(str);
+      else   LL->temperature=0.0;	
       if(FindParameters("Plasma",rank,"given_min_pz",input,str)) LL->givenMinPx = atof(str);
       else  LL->givenMinPx = -1e9;
       LL->mass=whatMass(LL->species);
@@ -822,7 +843,7 @@ int findLoadParameters(int rank, LoadList *LL,Domain *D,char *input)
         else { printf("In [Plasma], energy_spread=? [<1.0] \n"); fail=1;}
         if(FindParameters("Plasma",rank,"energy_chirp",input,str)) LL->eChirp=atof(str);
         else LL->eChirp=0.0;
-        if(FindParameters("Plasma",rank,"norm_emittance_r",input,str)) LL->emitR=atof(str)*1e-6;
+        if(FindParameters("Plasma",rank,"norm_emittance_r",input,str)) LL->emitR=atof(str)*1e-6*1.4285;
         else { printf("In [Plasma], norm_emittance_r=? [mm mrad] \n"); fail=1;}
         if(FindParameters("Plasma",rank,"beta_r",input,str)) LL->betaR=atof(str);
         else { printf("In [Plasma], beta_r=? [m] \n"); fail=1;}
@@ -1126,7 +1147,6 @@ int whatFieldType(char *str)
    if(strstr(str,"Split")) 		return Split;
    else if(strstr(str,"Yee"))   	return Yee;
    else if(strstr(str,"NoCherenkov"))   return NoCherenkov;
-   else if(strstr(str,"Split"))  	return Split;
    else 				return 0;
 }
 

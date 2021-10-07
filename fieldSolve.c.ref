@@ -327,12 +327,6 @@ void Bsolve2D_Yee(Domain *D,int iteration)
         D->BpNowI[m][i][j]=0.5*(D->BpI[m][i][j]+oldBpI);
     }
 
-  if(D->filter==ON && iteration%D->filterIter==0) {
-		if(D->filterBr==ON) 	filter(D,D->BrR,D->BrI);	else ;
-		if(D->filterBp==ON)	filter(D,D->BpR,D->BpI);	else ;
-		if(D->filterBz==ON)	filter(D,D->BzR,D->BzI);	else ;
-  } else ;
-
 }
 
 void Esolve2D_Yee(Domain *D,double dF,int iteration)
@@ -509,19 +503,13 @@ void Esolve2D_Yee(Domain *D,double dF,int iteration)
       D->EpR[m][i][j]=(1.0-cenComp)*D->EpR[m][i][j+1]+cenComp*D->EpR[m][i][j];
       D->EpI[m][i][j]=(1.0-cenComp)*D->EpI[m][i][j+1]+cenComp*D->EpI[m][i][j];
     }
-
-  if(D->filter==ON && iteration%D->filterIter==0) {
-    if(D->filterEr==ON)   filter(D,D->ErR,D->ErI); else ;
-    if(D->filterEp==ON)   filter(D,D->EpR,D->EpI); else ;
-    if(D->filterEz==ON)   filter(D,D->EzR,D->EzI); else ;
-  } else ;
 	 
 }
 
 void solve_Split_C(Domain *D,int iteration)
 {
   int i,j,m,numMode,istart,iend,jstart,jend;  
-  double dtBydr,dtBydz,r,dr,dz,dt,dF,coefEB1,coefEB2,coefEB3,coefRL,w0,w1;
+  double dtBydr,dtBydz,r,dr,dz,dt,coefEB1,coefEB2,coefEB3,coefRL;
   double nowPrCR,nowSrCR,prevPrCR,prevSrCR;
   double nowPrCI,nowSrCI,prevPrCI,prevSrCI;
   double upPrR,upPlR,upSrR,upSlR;
@@ -540,7 +528,68 @@ void solve_Split_C(Domain *D,int iteration)
 
   dtBydr=D->dt/D->dr;
   dtBydz=D->dt/D->dz;
-  dr=D->dr; dz=D->dz; dt=D->dt; dF=D->dF*0.5;
+  dr=D->dr; dz=D->dz; dt=D->dt;
+
+  j=jstart; m=0;
+  for(i=istart; i<iend; i++) {
+    D->BzCR[m][i][j]+=
+      -dtBydr*(D->SrR[m][i-1][j]+D->SrR[m][i][j]+D->SlR[m][i-1][j]+D->SlR[m][i][j]);
+    D->EzCR[m][i][j]+=
+       dtBydr*(D->PrR[m][i-1][j]+D->PrR[m][i][j]-D->PlR[m][i-1][j]-D->PlR[m][i][j])
+      -0.5*M_PI*dt*(D->JzCR[m][i-1][j]+D->JzCR[m][i][j]+D->JzR[m][i-1][j]+D->JzR[m][i][j]);
+  }
+  for(m=0; m<numMode; m++) { 
+      nowPrCR=D->PrCR[m][istart-1][j];
+      nowSrCR=D->SrCR[m][istart-1][j];
+      nowPrCI=D->PrCI[m][istart-1][j];
+      nowSrCI=D->SrCI[m][istart-1][j];
+      r=(double)(j-jstart);
+      for(i=istart; i<iend; i++) {
+        prevPrCR=nowPrCR;
+        nowPrCR=D->PrCR[m][i][j];
+        D->PrCR[m][i][j]=prevPrCR
+          -0.5/(r+0.5)*m*dtBydr*(D->BzI[m][i][j]+D->BzI[m][i][j+1])
+          +dtBydr*(D->EzR[m][i][j+1]-D->EzR[m][i][j])
+          -M_PI*dt*(D->JrR[m][i][j]+D->JrCR[m][i][j]);
+        prevPrCI=nowPrCI;
+        nowPrCI=D->PrCI[m][i][j];
+        D->PrCI[m][i][j]=prevPrCI
+          +0.5/(r+0.5)*m*dtBydr*(D->BzR[m][i][j]+D->BzR[m][i][j+1])
+          +dtBydr*(D->EzI[m][i][j+1]-D->EzI[m][i][j])
+          -M_PI*dt*(D->JrI[m][i][j]+D->JrCI[m][i][j]);
+
+        prevSrCR=nowSrCR;
+        nowSrCR=D->SrCR[m][i][j];
+        D->SrCR[m][i][j]=prevSrCR
+          -0.5/(r+0.5)*m*dtBydr*(D->EzI[m][i][j]+D->EzI[m][i][j+1])
+          -dtBydr*(D->BzR[m][i][j+1]-D->BzR[m][i][j])
+          -0.5*M_PI*dt*(D->JpR[m][i][j]+D->JpR[m][i-1][j]+D->JpCR[m][i][j]+D->JpCR[m][i-1][j]);
+        prevSrCI=nowSrCI;
+        nowSrCI=D->SrCI[m][i][j];
+        D->SrCI[m][i][j]=prevSrCI+
+          0.5/(r+0.5)*m*dtBydr*(D->EzR[m][i][j]+D->EzR[m][i][j+1])
+          -dtBydr*(D->BzI[m][i][j+1]-D->BzI[m][i][j])
+          -0.5*M_PI*dt*(D->JpI[m][i][j]+D->JpI[m][i-1][j]+D->JpCI[m][i][j]+D->JpCI[m][i-1][j]);
+
+        D->PlCR[m][i][j]=D->PlCR[m][i+1][j]
+          -0.5/(r+0.5)*m*dtBydr*(D->BzI[m][i+1][j+1]+D->BzI[m][i+1][j])
+          -dtBydr*(D->EzR[m][i+1][j+1]-D->EzR[m][i+1][j])
+          -M_PI*dt*(D->JrR[m][i+1][j]+D->JrCR[m][i+1][j]);
+        D->PlCI[m][i][j]=D->PlCI[m][i+1][j]
+          +0.5/(r+0.5)*m*dtBydr*(D->BzR[m][i+1][j+1]+D->BzR[m][i+1][j])
+          -dtBydr*(D->EzI[m][i+1][j+1]-D->EzI[m][i+1][j])
+          -M_PI*dt*(D->JrI[m][i+1][j]+D->JrCI[m][i+1][j]);
+
+        D->SlCR[m][i][j]=D->SlCR[m][i+1][j]
+          +0.5/(r+0.5)*m*dtBydr*(D->EzI[m][i+1][j+1]+D->EzI[m][i+1][j])
+          -dtBydr*(D->BzR[m][i+1][j+1]-D->BzR[m][i+1][j])
+          -0.5*M_PI*dt*(D->JpR[m][i+1][j]+D->JpR[m][i][j]+D->JpCR[m][i+1][j]+D->JpCR[m][i][j]);
+        D->SlCI[m][i][j]=D->SlCI[m][i+1][j]
+          -0.5/(r+0.5)*m*dtBydr*(D->EzR[m][i+1][j+1]+D->EzR[m][i+1][j])
+          -dtBydr*(D->BzI[m][i+1][j+1]-D->BzI[m][i+1][j])
+          -0.5*M_PI*dt*(D->JpI[m][i+1][j]+D->JpI[m][i][j]+D->JpCI[m][i+1][j]+D->JpCI[m][i][j]);
+      }       //End of i
+  }         //End of m
 
   for(j=jstart; j<jend; j++) {
     D->upr[j]=1.0;
@@ -556,14 +605,6 @@ void solve_Split_C(Domain *D,int iteration)
   if(D->pml==ON && D->pmlStart<iteration)  absorb_U(D);  else    ;
 
 
-  j=jstart; m=0;
-  for(i=istart; i<iend; i++) {
-    D->BzCR[m][i][j]+=
-      -dtBydr*(D->SrR[m][i-1][j]+D->SrR[m][i][j]+D->SlR[m][i-1][j]+D->SlR[m][i][j]);
-    D->EzCR[m][i][j]+=
-       dtBydr*(D->PrR[m][i-1][j]+D->PrR[m][i][j]-D->PlR[m][i-1][j]-D->PlR[m][i][j])
-      -0.5*M_PI*dt*(D->JzCR[m][i-1][j]+D->JzCR[m][i][j]+D->JzR[m][i-1][j]+D->JzR[m][i][j]);
-  }
   for(m=0; m<numMode; m++) 
     for(j=jstart+1; j<jend; j++) {
 
@@ -574,8 +615,6 @@ void solve_Split_C(Domain *D,int iteration)
       nowPrCI=D->PrCI[m][istart-1][j];
       nowSrCI=D->SrCI[m][istart-1][j];
       r=(double)(j-jstart);
-//  		w0=(r+0.25)/(2.0*r);	w1=1.0-w0;	//20210927 
-  		w0=0.5;	w1=1.0-w0;
       for(i=istart; i<iend; i++) {
         upPrR=0.5*(D->PrR[m][i-1][j]  +D->PrR[m][i][j]);
         dnPrR=0.5*(D->PrR[m][i-1][j-1]+D->PrR[m][i][j-1]);
@@ -593,10 +632,10 @@ void solve_Split_C(Domain *D,int iteration)
         dnSlR=0.5*(D->SlR[m][i-1][j-1]+D->SlR[m][i][j-1]);
         upSlI=0.5*(D->SlI[m][i-1][j]  +D->SlI[m][i][j]);
         dnSlI=0.5*(D->SlI[m][i-1][j-1]+D->SlI[m][i][j-1]);
-        PrR=w1*upPrR+w0*dnPrR; PlR=w1*upPlR+w0*dnPlR; 
-        PrI=w1*upPrI+w0*dnPrI; PlI=w1*upPlI+w0*dnPlI; 
-        SrR=w1*upSrR+w0*dnSrR; SlR=w1*upSlR+w0*dnSlR; 
-        SrI=w1*upSrI+w0*dnSrI; SlI=w1*upSlI+w0*dnSlI; 
+        PrR=0.5*(upPrR+dnPrR); PlR=0.5*(upPlR+dnPlR); 
+        PrI=0.5*(upPrI+dnPrI); PlI=0.5*(upPlI+dnPlI); 
+        SrR=0.5*(upSrR+dnSrR); SlR=0.5*(upSlR+dnSlR); 
+        SrI=0.5*(upSrI+dnSrI); SlI=0.5*(upSlI+dnSlI); 
 
         oldEzCR=D->EzCR[m][i][j]; oldEzCI=D->EzCI[m][i][j];
         oldBzCR=D->BzCR[m][i][j]; oldBzCI=D->BzCI[m][i][j];
@@ -607,83 +646,70 @@ void solve_Split_C(Domain *D,int iteration)
 
         tmpr=upr;     tmpd=upd;
 
-        tmp=0.5/r*m*dtBydr*(SlI-SrI)
-              +0.5/r*dtBydr*((r+0.5)*(upPrR-upPlR)-(r-0.5)*(dnPrR-dnPlR))
-              -0.5*M_PI*dt*(D->JzR[m][i-1][j]+D->JzR[m][i][j]+D->JzCR[m][i-1][j]+D->JzCR[m][i][j])
-              +0.5*dF*dtBydz*(D->FR[m][i+1][j]-D->FR[m][i-1][j]);
-        D->EzCR[m][i][j]=tmpd*(oldEzCR+tmp*tmpr);
-        tmp=-0.5/r*m*dtBydr*(SlR-SrR)
-              +0.5/r*dtBydr*((r+0.5)*(upPrI-upPlI)-(r-0.5)*(dnPrI-dnPlI))
-              -0.5*M_PI*dt*(D->JzI[m][i-1][j]+D->JzI[m][i][j]+D->JzCI[m][i-1][j]+D->JzCI[m][i][j])
-              +0.5*dF*dtBydz*(D->FI[m][i+1][j]-D->FI[m][i-1][j]);
+        tmp=tmpr*(0.5/r*dtBydr*(PrR-PlR)
+              +0.5/r*m*dtBydr*(SlI-SrI)
+              +0.5*dtBydr*((upPrR-dnPrR)-(upPlR-dnPlR))
+              -0.5*M_PI*dt*(D->JzR[m][i-1][j]+D->JzR[m][i][j]+D->JzCR[m][i-1][j]+D->JzCR[m][i][j]));
+        D->EzCR[m][i][j]=tmpd*(oldEzCR+tmp);
+        tmp=tmpr*(0.5/r*dtBydr*(PrI-PlI)
+              -0.5/r*m*dtBydr*(SlR-SrR)
+              +0.5*dtBydr*((upPrI-dnPrI)-(upPlI-dnPlI))
+              -0.5*M_PI*dt*(D->JzI[m][i-1][j]+D->JzI[m][i][j]+D->JzCI[m][i-1][j]+D->JzCI[m][i][j]));
         D->EzCI[m][i][j]=tmpd*(oldEzCI+tmp);
 
-        tmp=tmpr*(-0.5/r*m*dtBydr*(PlI+PrI)
-              -0.5/r*dtBydr*((r+0.5)*(upSrR+upSlR)-(r-0.5)*(dnSrR+dnSlR)));
+        tmp=tmpr*(-0.5/r*dtBydr*(SrR+SlR)
+              -0.5/r*m*dtBydr*(PlI+PrI)
+              -0.5*dtBydr*((upSrR-dnSrR)+(upSlR-dnSlR)));
         D->BzCR[m][i][j]=tmpd*(oldBzCR+tmp);
-        tmp=tmpr*(0.5/r*m*dtBydr*(PlR+PrR)
-              -0.5/r*dtBydr*((r+0.5)*(upSrI+upSlI)-(r-0.5)*(dnSrI+dnSlI)));
+        tmp=tmpr*(-0.5/r*dtBydr*(SrI+SlI)
+              +0.5/r*m*dtBydr*(PlR+PrR)
+              -0.5*dtBydr*((upSrI-dnSrI)+(upSlI-dnSlI)));
         D->BzCI[m][i][j]=tmpd*(oldBzCI+tmp);
-		}
-	}
 
-
-  for(m=0; m<numMode; m++) 
-    for(j=jstart; j<jend; j++) {
-
-      upr=D->upr[j]; upd=D->upd[j];
-      r=(double)(j-jstart);
-//  		w0=(r+0.75)/(2.0*r+1);	w1=1.0-w0;	//20210927
-  		w0=0.5;	w1=1.0-w0;
-
-      for(i=istart; i<iend; i++) {
-        tmp=-dtBydr/(r+0.5)*m*(w1*D->BzI[m][i+1][j+1]+w0*D->BzI[m][i+1][j])
-              -dtBydr*(D->EzR[m][i+1][j+1]-D->EzR[m][i+1][j])
-              -M_PI*dt*(D->JrR[m][i+1][j]+D->JrCR[m][i+1][j])
-              +dF*dtBydr*(D->FR[m][i+1][j+1]-D->FR[m][i+1][j]);
-        D->PlCR[m][i][j]=tmpd*(D->PlCR[m][i+1][j]+tmp*tmpr);
-        tmp=dtBydr/(r+0.5)*m*(w1*D->BzR[m][i+1][j+1]+w0*D->BzR[m][i+1][j])
-              -dtBydr*(D->EzI[m][i+1][j+1]-D->EzI[m][i+1][j])
-              -M_PI*dt*(D->JrI[m][i+1][j]+D->JrCI[m][i+1][j])
-              +dF*dtBydr*(D->FI[m][i+1][j+1]-D->FI[m][i+1][j]);
-        D->PlCI[m][i][j]=tmpd*(D->PlCI[m][i+1][j]+tmp*tmpr);
-
-        tmp=dtBydr/(r+0.5)*m*(w1*D->EzI[m][i+1][j+1]+w0*D->EzI[m][i+1][j])
-              -dtBydr*(D->BzR[m][i+1][j+1]-D->BzR[m][i+1][j])
-              -0.5*M_PI*dt*(D->JpR[m][i+1][j]+D->JpR[m][i][j]+D->JpCR[m][i+1][j]+D->JpCR[m][i][j])
-              -dF*m/(r+0.5)*dtBydr*(w1*D->FI[m][i+1][j+1]+w0*D->FI[m][i+1][j]);
-        D->SlCR[m][i][j]=tmpd*(D->SlCR[m][i+1][j]+tmp*tmpr);
-        tmp=-dtBydr/(r+0.5)*m*(w1*D->EzR[m][i+1][j+1]+w0*D->EzR[m][i+1][j])
-              -dtBydr*(D->BzI[m][i+1][j+1]-D->BzI[m][i+1][j])
-              -0.5*M_PI*dt*(D->JpI[m][i+1][j]+D->JpI[m][i][j]+D->JpCI[m][i+1][j]+D->JpCI[m][i][j])
-              +dF*m/(r+0.5)*dtBydr*(w1*D->FR[m][i+1][j+1]+w0*D->FR[m][i+1][j]);
-        D->SlCI[m][i][j]=tmpd*(D->SlCR[m][i+1][j]+tmp*tmpr);
-      }       //End of i
-
-		for(i=iend-1; i>=istart; i--) {
-        tmp=-dtBydr/(r+0.5)*m*(w0*D->BzI[m][i][j]+w1*D->BzI[m][i][j+1])
+        prevPrCR=nowPrCR;
+        nowPrCR=D->PrCR[m][i][j];
+        tmp=tmpr*(-0.5/(r+0.5)*m*dtBydr*(D->BzI[m][i][j]+D->BzI[m][i][j+1])
               +dtBydr*(D->EzR[m][i][j+1]-D->EzR[m][i][j])
-              -M_PI*dt*(D->JrR[m][i][j]+D->JrCR[m][i][j])
-              +dF*dtBydr*(D->FR[m][i][j+1]-D->FR[m][i][j]);
-        D->PrCR[m][i][j]=tmpd*(D->PrCR[m][i-1][j]+tmp*tmpr);
-        tmp=dtBydr/(r+0.5)*m*(w0*D->BzR[m][i][j]+w1*D->BzR[m][i][j+1])
+              -M_PI*dt*(D->JrR[m][i][j]+D->JrCR[m][i][j]));
+        D->PrCR[m][i][j]=tmpd*(prevPrCR+tmp);
+        prevPrCI=nowPrCI;
+        nowPrCI=D->PrCI[m][i][j];
+        tmp=tmpr*(0.5/(r+0.5)*m*dtBydr*(D->BzR[m][i][j]+D->BzR[m][i][j+1])
               +dtBydr*(D->EzI[m][i][j+1]-D->EzI[m][i][j])
-              -M_PI*dt*(D->JrI[m][i][j]+D->JrCI[m][i][j])
-              +dF*dtBydr*(D->FI[m][i][j+1]-D->FI[m][i][j]);
-        D->PrCI[m][i][j]=tmpd*(D->PrCI[m][i-1][j]+tmp*tmpr);
+              -M_PI*dt*(D->JrI[m][i][j]+D->JrCI[m][i][j]));
+        D->PrCI[m][i][j]=tmpd*(prevPrCI+tmp);
 
-        tmp=-dtBydr/(r+0.5)*m*(w0*D->EzI[m][i][j]+w1*D->EzI[m][i][j+1])
+        prevSrCR=nowSrCR;
+        nowSrCR=D->SrCR[m][i][j];
+        tmp=tmpr*(-0.5/(r+0.5)*m*dtBydr*(D->EzI[m][i][j]+D->EzI[m][i][j+1])
               -dtBydr*(D->BzR[m][i][j+1]-D->BzR[m][i][j])
-              -0.5*M_PI*dt*(D->JpR[m][i][j]+D->JpR[m][i-1][j]+D->JpCR[m][i][j]+D->JpCR[m][i-1][j])
-              -dF*m/(r+0.5)*dtBydr*(w1*D->FI[m][i][j+1]+w0*D->FI[m][i][j]);
-        D->SrCR[m][i][j]=tmpd*(D->SrCR[m][i-1][j]+tmp*tmpr);
-        tmp=dtBydr/(r+0.5)*m*(w0*D->EzR[m][i][j]+w1*D->EzR[m][i][j+1])
+              -0.5*M_PI*dt*(D->JpR[m][i][j]+D->JpR[m][i-1][j]+D->JpCR[m][i][j]+D->JpCR[m][i-1][j]));
+        D->SrCR[m][i][j]=tmpd*(prevSrCR+tmp);
+        prevSrCI=nowSrCI;
+        nowSrCI=D->SrCI[m][i][j];
+        tmp=tmpr*(0.5/(r+0.5)*m*dtBydr*(D->EzR[m][i][j]+D->EzR[m][i][j+1])
               -dtBydr*(D->BzI[m][i][j+1]-D->BzI[m][i][j])
-              -0.5*M_PI*dt*(D->JpI[m][i][j]+D->JpI[m][i-1][j]+D->JpCI[m][i][j]+D->JpCI[m][i-1][j]);
-              +dF*m/(r+0.5)*dtBydr*(w1*D->FR[m][i][j+1]+w0*D->FR[m][i][j]);
-        D->SrCI[m][i][j]=tmpd*(D->SrCI[m][i-1][j]+tmp*tmpr);
-		}
+              -0.5*M_PI*dt*(D->JpI[m][i][j]+D->JpI[m][i-1][j]+D->JpCI[m][i][j]+D->JpCI[m][i-1][j]));
+        D->SrCI[m][i][j]=tmpd*(prevSrCI+tmp);
 
+        tmp=tmpr*(-0.5/(r+0.5)*m*dtBydr*(D->BzI[m][i+1][j+1]+D->BzI[m][i+1][j])
+              -dtBydr*(D->EzR[m][i+1][j+1]-D->EzR[m][i+1][j])
+              -M_PI*dt*(D->JrR[m][i+1][j]+D->JrCR[m][i+1][j]));
+        D->PlCR[m][i][j]=tmpd*(D->PlCR[m][i+1][j]+tmp);
+        tmp=tmpr*(0.5/(r+0.5)*m*dtBydr*(D->BzR[m][i+1][j+1]+D->BzR[m][i+1][j])
+              -dtBydr*(D->EzI[m][i+1][j+1]-D->EzI[m][i+1][j])
+              -M_PI*dt*(D->JrI[m][i+1][j]+D->JrCI[m][i+1][j]));
+        D->PlCI[m][i][j]=tmpd*(D->PlCI[m][i+1][j]+tmp);
+
+        tmp=tmpr*(0.5/(r+0.5)*m*dtBydr*(D->EzI[m][i+1][j+1]+D->EzI[m][i+1][j])
+              -dtBydr*(D->BzR[m][i+1][j+1]-D->BzR[m][i+1][j])
+              -0.5*M_PI*dt*(D->JpR[m][i+1][j]+D->JpR[m][i][j]+D->JpCR[m][i+1][j]+D->JpCR[m][i][j]));
+        D->SlCR[m][i][j]=tmpd*(D->SlCR[m][i+1][j]+tmp);
+        tmp=tmpr*(-0.5/(r+0.5)*m*dtBydr*(D->EzR[m][i+1][j+1]+D->EzR[m][i+1][j])
+              -dtBydr*(D->BzI[m][i+1][j+1]-D->BzI[m][i+1][j])
+              -0.5*M_PI*dt*(D->JpI[m][i+1][j]+D->JpI[m][i][j]+D->JpCI[m][i+1][j]+D->JpCI[m][i][j]));
+        D->SlCI[m][i][j]=tmpd*(D->SlCR[m][i+1][j]+tmp);
+      }       //End of i
     }         //End of j
 
   // center treatment
@@ -696,22 +722,12 @@ void solve_Split_C(Domain *D,int iteration)
       D->SlCR[m][i][j]=(1.0-cenComp)*D->SlCR[m][i][j+1]+cenComp*D->SlCR[m][i][j];
       D->SlCI[m][i][j]=(1.0-cenComp)*D->SlCI[m][i][j+1]+cenComp*D->SlCI[m][i][j];
     }
-
-	if(iteration<D->centerTreatment) {
-		for(i=istart; i<iend; i++) { 
-			D->PlCR[0][i][j]=0.0;
-			D->SlCR[0][i][j]=0.0;
-		}
-	} else ;
-
-	if(D->filter==ON && iteration%D->filterIter==0) {
-   	if(D->filterPr==ON)	filter(D,D->PrCR,D->PrCI);	else ;
-   	if(D->filterPl==ON)	filter(D,D->PlCR,D->PlCI);	else ;
-   	if(D->filterSr==ON)	filter(D,D->SrCR,D->SrCI);
-   	if(D->filterSl==ON)	filter(D,D->SlCR,D->SlCI);
-   	if(D->filterEz==ON)	filter(D,D->EzCR,D->EzCI);
-   	if(D->filterBz==ON)	filter(D,D->BzCR,D->BzCI);
-	} else ;
+  if(D->filter==ON && iteration%D->filterIter==0) {
+//    filter(D,D->PlCR,D->PlCI);
+//    filter(D,D->SlCR,D->SlCI);
+    filter(D,D->BzCR,D->BzCI);
+    filter(D,D->EzCR,D->EzCI);
+  } else ;
 
   //left boundary for Ez
 //  i=istart;
@@ -726,7 +742,7 @@ void solve_Split_C(Domain *D,int iteration)
 void solve_Split(Domain *D,int iteration)
 {
   int i,j,m,numMode,istart,iend,jstart,jend;  
-  double dtBydr,dtBydz,r,dr,dz,dt,coefEB1,coefEB2,coefEB3,coefRL,coefF,w0,w1;
+  double dtBydr,dtBydz,r,dr,dz,dt,coefEB1,coefEB2,coefEB3,coefRL,coefF;
   double nowPrR,nowSrR,prevPrR,prevSrR;
   double nowPrI,nowSrI,prevPrI,prevSrI;
   double upPrCR,upPlCR,upSrCR,upSlCR;
@@ -744,10 +760,83 @@ void solve_Split(Domain *D,int iteration)
 
   dtBydr=D->dt/D->dr;
   dtBydz=D->dt/D->dz;
-  dr=D->dr; dz=D->dz; dt=D->dt; dF=D->dF*0.5;
+  dr=D->dr; dz=D->dz; dt=D->dt; dF=D->dF;
   upL=(double)(D->ny+D->minYDomain-D->pmlCellUp);
   LdU=D->pmlCellUp;
   rr=D->pmlr;    rd=D->pmld;
+
+  upr=upd=1.0;
+
+  j=jstart; m=0;
+  for(i=istart; i<iend; i++) {
+    D->BzR[m][i][j]+=
+      -dtBydr*(D->SrCR[m][i-1][j]+D->SrCR[m][i][j]+D->SlCR[m][i-1][j]+D->SlCR[m][i][j]);
+    D->EzR[m][i][j]+=
+       dtBydr*(D->PrCR[m][i-1][j]+D->PrCR[m][i][j]-D->PlCR[m][i-1][j]-D->PlCR[m][i][j])
+      -M_PI*dt*(D->JzR[m][i-1][j]+D->JzR[m][i][j])
+      +0.5*dF*dtBydz*(D->FR[m][i+1][j]-D->FR[m][i-1][j]);
+  }
+
+  for(m=0; m<numMode; m++) { 
+      r=(double)(j-jstart);
+      nowPrR=D->PrR[m][istart-1][j];
+      nowSrR=D->SrR[m][istart-1][j];
+      nowPrI=D->PrI[m][istart-1][j];
+      nowSrI=D->SrI[m][istart-1][j];
+      for(i=istart; i<iend; i++) {
+        prevPrR=nowPrR;
+        nowPrR=D->PrR[m][i][j];
+        D->PrR[m][i][j]=prevPrR
+          -0.5/(r+0.5)*m*dtBydr*(D->BzCI[m][i][j]+D->BzCI[m][i][j+1])
+          +dtBydr*(D->EzCR[m][i][j+1]-D->EzCR[m][i][j])
+          -2.0*M_PI*dt*D->JrR[m][i][j]
+          +dF*dtBydr*(D->FR[m][i][j+1]-D->FR[m][i][j]);
+        prevPrI=nowPrI;
+        nowPrI=D->PrI[m][i][j];
+        D->PrI[m][i][j]=prevPrI
+          +0.5/(r+0.5)*m*dtBydr*(D->BzCR[m][i][j]+D->BzCR[m][i][j+1])
+          +dtBydr*(D->EzCI[m][i][j+1]-D->EzCI[m][i][j])
+          -2.0*M_PI*dt*D->JrI[m][i][j]
+          +dF*dtBydr*(D->FI[m][i][j+1]-D->FI[m][i][j]);
+
+        prevSrR=nowSrR;
+        nowSrR=D->SrR[m][i][j];
+        D->SrR[m][i][j]=prevSrR
+          -0.5/(r+0.5)*m*dtBydr*(D->EzCI[m][i][j]+D->EzCI[m][i][j+1])
+          -dtBydr*(D->BzCR[m][i][j+1]-D->BzCR[m][i][j])
+          -M_PI*dt*(D->JpR[m][i][j]+D->JpR[m][i-1][j])
+          -0.5*dF*m/(r+0.5)*dtBydr*(D->FI[m][i][j+1]+D->FI[m][i][j]);
+        prevSrI=nowSrI;
+        nowSrI=D->SrI[m][i][j];
+        D->SrI[m][i][j]=prevSrI+
+          0.5/(r+0.5)*m*dtBydr*(D->EzCR[m][i][j]+D->EzCR[m][i][j+1])
+          -dtBydr*(D->BzCI[m][i][j+1]-D->BzCI[m][i][j])
+          -M_PI*dt*(D->JpI[m][i][j]+D->JpI[m][i-1][j])
+          +0.5*dF*m/(r+0.5)*dtBydr*(D->FR[m][i][j+1]+D->FR[m][i][j]);
+
+        D->PlR[m][i][j]=D->PlR[m][i+1][j]
+          -0.5/(r+0.5)*m*dtBydr*(D->BzCI[m][i+1][j+1]+D->BzCI[m][i+1][j])
+          -dtBydr*(D->EzCR[m][i+1][j+1]-D->EzCR[m][i+1][j])
+          -2.0*M_PI*dt*D->JrR[m][i+1][j]
+          +dF*dtBydr*(D->FR[m][i+1][j+1]-D->FR[m][i+1][j]);
+        D->PlI[m][i][j]=D->PlI[m][i+1][j]
+          +0.5/(r+0.5)*m*dtBydr*(D->BzCR[m][i+1][j+1]+D->BzCR[m][i+1][j])
+          -dtBydr*(D->EzCI[m][i+1][j+1]-D->EzCI[m][i+1][j])
+          -2.0*M_PI*dt*D->JrI[m][i+1][j]
+          +dF*dtBydr*(D->FI[m][i+1][j+1]-D->FI[m][i+1][j]);
+
+        D->SlR[m][i][j]=D->SlR[m][i+1][j]
+          +0.5/(r+0.5)*m*dtBydr*(D->EzCI[m][i+1][j+1]+D->EzCI[m][i+1][j])
+          -dtBydr*(D->BzCR[m][i+1][j+1]-D->BzCR[m][i+1][j])
+          -M_PI*dt*(D->JpR[m][i+1][j]+D->JpR[m][i][j])
+          -0.5*dF*m/(r+0.5)*dtBydr*(D->FI[m][i+1][j+1]+D->FI[m][i+1][j]);
+        D->SlI[m][i][j]=D->SlI[m][i+1][j]
+          -0.5/(r+0.5)*m*dtBydr*(D->EzCR[m][i+1][j+1]+D->EzCR[m][i+1][j])
+          -dtBydr*(D->BzCI[m][i+1][j+1]-D->BzCI[m][i+1][j])
+          -M_PI*dt*(D->JpI[m][i+1][j]+D->JpI[m][i][j])
+          +0.5*dF*m/(r+0.5)*dtBydr*(D->FR[m][i+1][j+1]+D->FR[m][i+1][j]);
+      }       //End of i
+    }         //End of j
 
   for(j=jstart; j<jend; j++) {
     D->upr[j]=1.0;
@@ -762,24 +851,12 @@ void solve_Split(Domain *D,int iteration)
 
   if(D->pml==ON && D->pmlStart<iteration)  absorb_U(D);  else    ;
 
-
-  j=jstart; m=0;
-  for(i=istart; i<iend; i++) {
-    D->BzR[m][i][j]+=
-      -dtBydr*(D->SrCR[m][i-1][j]+D->SrCR[m][i][j]+D->SlCR[m][i-1][j]+D->SlCR[m][i][j]);
-    D->EzR[m][i][j]+=
-       dtBydr*(D->PrCR[m][i-1][j]+D->PrCR[m][i][j]-D->PlCR[m][i-1][j]-D->PlCR[m][i][j])
-      -M_PI*dt*(D->JzR[m][i-1][j]+D->JzR[m][i][j])
-      +0.5*dF*dtBydz*(D->FR[m][i+1][j]-D->FR[m][i-1][j]);
-  }
   for(m=0; m<numMode; m++) 
     for(j=jstart+1; j<jend; j++) {
 
       upr=D->upr[j]; upd=D->upd[j];
-      r=(double)(j-jstart);
-//  		w0=(r+0.25)/(2.0*r);	w1=1.0-w0;	//20210927
-  		w0=0.5;	w1=1.0-w0;
 
+      r=(double)(j-jstart);
       nowPrR=D->PrR[m][istart-1][j];
       nowSrR=D->SrR[m][istart-1][j];
       nowPrI=D->PrI[m][istart-1][j];
@@ -801,10 +878,10 @@ void solve_Split(Domain *D,int iteration)
         dnSlCR=0.5*(D->SlCR[m][i-1][j-1]+D->SlCR[m][i][j-1]);
         upSlCI=0.5*(D->SlCI[m][i-1][j]  +D->SlCI[m][i][j]);
         dnSlCI=0.5*(D->SlCI[m][i-1][j-1]+D->SlCI[m][i][j-1]);
-        PrCR=w1*upPrCR+w0*dnPrCR; PlCR=w1*upPlCR+w0*dnPlCR; 
-        PrCI=w1*upPrCI+w0*dnPrCI; PlCI=w1*upPlCI+w0*dnPlCI; 
-        SrCR=w1*upSrCR+w0*dnSrCR; SlCR=w1*upSlCR+w0*dnSlCR; 
-        SrCI=w1*upSrCI+w0*dnSrCI; SlCI=w1*upSlCI+w0*dnSlCI; 
+        PrCR=0.5*(upPrCR+dnPrCR); PlCR=0.5*(upPlCR+dnPlCR); 
+        PrCI=0.5*(upPrCI+dnPrCI); PlCI=0.5*(upPlCI+dnPlCI); 
+        SrCR=0.5*(upSrCR+dnSrCR); SlCR=0.5*(upSlCR+dnSlCR); 
+        SrCI=0.5*(upSrCI+dnSrCI); SlCI=0.5*(upSlCI+dnSlCI); 
 
         oldEzR=D->EzR[m][i][j]; oldEzI=D->EzI[m][i][j];
         oldBzR=D->BzR[m][i][j]; oldBzI=D->BzI[m][i][j];
@@ -815,85 +892,81 @@ void solve_Split(Domain *D,int iteration)
 
         tmpr=upr;     tmpd=upd;
 
-        tmp=tmpr*(0.5/r*m*dtBydr*(SlCI-SrCI)
-              +0.5/r*dtBydr*((r+0.5)*(upPrCR-upPlCR)-(r-0.5)*(dnPrCR-dnPlCR))
+        tmp=tmpr*(0.5/r*dtBydr*(PrCR-PlCR)
+              +0.5/r*m*dtBydr*(SlCI-SrCI)
+              +0.5*dtBydr*((upPrCR-dnPrCR)-(upPlCR-dnPlCR))
               -M_PI*dt*(D->JzR[m][i-1][j]+D->JzR[m][i][j])
               +0.5*dF*dtBydz*(D->FR[m][i+1][j]-D->FR[m][i-1][j]));
         D->EzR[m][i][j]=tmpd*(oldEzR+tmp);
-        tmp=tmpr*(-0.5/r*m*dtBydr*(SlCR-SrCR)
-              +0.5/r*dtBydr*((r+0.5)*(upPrCI-upPlCI)-(r-0.5)*(dnPrCI-dnPlCI))
-              -M_PI*dt*(D->JzI[m][i-1][j]+D->JzI[m][i][j])
+        tmp=tmpr*(0.5/r*dtBydr*(PrCI-PlCI)
+              -0.5/r*m*dtBydr*(SlCR-SrCR)
+              +0.5*dtBydr*((upPrCI-dnPrCI)-(upPlCI-dnPlCI))
+              -pi*dt*(D->JzI[m][i-1][j]+D->JzI[m][i][j])
               +0.5*dF*dtBydz*(D->FI[m][i+1][j]-D->FI[m][i-1][j]));
         D->EzI[m][i][j]=tmpd*(oldEzI+tmp);
 
-        tmp=tmpr*(-0.5/r*m*dtBydr*(PlCI+PrCI)
-              -0.5/r*dtBydr*((r+0.5)*(upSrCR+upSlCR)-(r-0.5)*(dnSrCR+dnSlCR)));
+        tmp=tmpr*(-0.5/r*dtBydr*(SrCR+SlCR)
+              -0.5/r*m*dtBydr*(PlCI+PrCI)
+              -0.5*dtBydr*((upSrCR-dnSrCR)+(upSlCR-dnSlCR)));
         D->BzR[m][i][j]=tmpd*(oldBzR+tmp);
-        tmp=tmpr*(0.5/r*m*dtBydr*(PlCR+PrCR)
-              -0.5/r*dtBydr*((r+0.5)*(upSrCI+upSlCI)-(r-0.5)*(dnSrCI+dnSlCI)));
+        tmp=tmpr*(-0.5/r*dtBydr*(SrCI+SlCI)
+              +0.5/r*m*dtBydr*(PlCR+PrCR)
+              -0.5*dtBydr*((upSrCI-dnSrCI)+(upSlCI-dnSlCI)));
         D->BzI[m][i][j]=tmpd*(oldBzI+tmp);
-		}
-	}
 
-  for(m=0; m<numMode; m++) { 
-    for(j=jstart; j<jend; j++) {
-
-      upr=D->upr[j]; upd=D->upd[j];
-      r=(double)(j-jstart);
-//  		w0=(r+0.75)/(2.0*r+1);	w1=1.0-w0;	//20210927
-  		w0=0.5;	w1=1.0-w0;
-
-      tmpr=upr;     tmpd=upd;
-      for(i=istart; i<iend; i++) {
-        tmp=-dtBydr/(r+0.5)*m*(w1*D->BzCI[m][i+1][j+1]+w0*D->BzCI[m][i+1][j])
-              -dtBydr*(D->EzCR[m][i+1][j+1]-D->EzCR[m][i+1][j])
-              -2.0*M_PI*dt*D->JrR[m][i+1][j]
-              +dF*dtBydr*(D->FR[m][i+1][j+1]-D->FR[m][i+1][j]);
-        D->PlR[m][i][j]=tmpd*(D->PlR[m][i+1][j]+tmp*tmpr);
-        tmp=+dtBydr/(r+0.5)*m*(w1*D->BzCR[m][i+1][j+1]+w0*D->BzCR[m][i+1][j])
-              -dtBydr*(D->EzCI[m][i+1][j+1]-D->EzCI[m][i+1][j])
-              -2.0*M_PI*dt*D->JrI[m][i+1][j]
-              +dF*dtBydr*(D->FI[m][i+1][j+1]-D->FI[m][i+1][j]);
-        D->PlI[m][i][j]=tmpd*(D->PlI[m][i+1][j]+tmp*tmpr);
-
-        tmp=+dtBydr/(r+0.5)*m*(w1*D->EzCI[m][i+1][j+1]+w0*D->EzCI[m][i+1][j])
-              -dtBydr*(D->BzCR[m][i+1][j+1]-D->BzCR[m][i+1][j])
-              -M_PI*dt*(D->JpR[m][i+1][j]+D->JpR[m][i][j])
-              -dF*m/(r+0.5)*dtBydr*(w1*D->FI[m][i+1][j+1]+w0*D->FI[m][i+1][j]);
-        D->SlR[m][i][j]=tmpd*(D->SlR[m][i+1][j]+tmp*tmpr);
-        tmp=-dtBydr/(r+0.5)*m*(w1*D->EzCR[m][i+1][j+1]+w0*D->EzCR[m][i+1][j])
-              -dtBydr*(D->BzCI[m][i+1][j+1]-D->BzCI[m][i+1][j])
-              -M_PI*dt*(D->JpI[m][i+1][j]+D->JpI[m][i][j])
-              +dF*m/(r+0.5)*dtBydr*(w1*D->FR[m][i+1][j+1]+w0*D->FR[m][i+1][j]);
-        D->SlI[m][i][j]=tmpd*(D->SlI[m][i+1][j]+tmp*tmpr);
-		}
-
-		for(i=iend-1; i>=istart; i--) {
-        tmp=-dtBydr/(r+0.5)*m*(w0*D->BzCI[m][i][j]+w1*D->BzCI[m][i][j+1])
+        prevPrR=nowPrR;
+        nowPrR=D->PrR[m][i][j];
+        tmp=tmpr*(-0.5/(r+0.5)*m*dtBydr*(D->BzCI[m][i][j]+D->BzCI[m][i][j+1])
               +dtBydr*(D->EzCR[m][i][j+1]-D->EzCR[m][i][j])
               -2.0*M_PI*dt*D->JrR[m][i][j]
-              +dF*dtBydr*(D->FR[m][i][j+1]-D->FR[m][i][j]);
-        D->PrR[m][i][j]=tmpd*(D->PrR[m][i-1][j]+tmp*tmpr);
-        tmp=+dtBydr/(r+0.5)*m*(w0*D->BzCR[m][i][j]+w1*D->BzCR[m][i][j+1])
+              +dF*dtBydr*(D->FR[m][i][j+1]-D->FR[m][i][j]));
+        D->PrR[m][i][j]=tmpd*(prevPrR+tmp);
+        prevPrI=nowPrI;
+        nowPrI=D->PrI[m][i][j];
+        tmp=tmpr*(0.5/(r+0.5)*m*dtBydr*(D->BzCR[m][i][j]+D->BzCR[m][i][j+1])
               +dtBydr*(D->EzCI[m][i][j+1]-D->EzCI[m][i][j])
               -2.0*M_PI*dt*D->JrI[m][i][j]
-              +dF*dtBydr*(D->FI[m][i][j+1]-D->FI[m][i][j]);
-        D->PrI[m][i][j]=tmpd*(D->PrI[m][i-1][j]+tmp*tmpr);
+              +dF*dtBydr*(D->FI[m][i][j+1]-D->FI[m][i][j]));
+        D->PrI[m][i][j]=tmpd*(prevPrI+tmp);
 
-        tmp=-dtBydr/(r+0.5)*m*(w0*D->EzCI[m][i][j]+w1*D->EzCI[m][i][j+1])
+        prevSrR=nowSrR;
+        nowSrR=D->SrR[m][i][j];
+        tmp=tmpr*(-0.5/(r+0.5)*m*dtBydr*(D->EzCI[m][i][j]+D->EzCI[m][i][j+1])
               -dtBydr*(D->BzCR[m][i][j+1]-D->BzCR[m][i][j])
               -M_PI*dt*(D->JpR[m][i][j]+D->JpR[m][i-1][j])
-              -dF*m/(r+0.5)*dtBydr*(w1*D->FI[m][i][j+1]+w0*D->FI[m][i][j]);
-        D->SrR[m][i][j]=tmpd*(D->SrR[m][i-1][j]+tmp*tmpr);
-        tmp=+dtBydr/(r+0.5)*m*(w0*D->EzCR[m][i][j]+w1*D->EzCR[m][i][j+1])
+              -0.5*dF*m/(r+0.5)*dtBydr*(D->FI[m][i][j+1]+D->FI[m][i][j]));
+        D->SrR[m][i][j]=tmpd*(prevSrR+tmp);
+        prevSrI=nowSrI;
+        nowSrI=D->SrI[m][i][j];
+        tmp=tmpr*(0.5/(r+0.5)*m*dtBydr*(D->EzCR[m][i][j]+D->EzCR[m][i][j+1])
               -dtBydr*(D->BzCI[m][i][j+1]-D->BzCI[m][i][j])
               -M_PI*dt*(D->JpI[m][i][j]+D->JpI[m][i-1][j])
-              +dF*m/(r+0.5)*dtBydr*(w1*D->FR[m][i][j+1]+w0*D->FR[m][i][j]);
-        D->SrI[m][i][j]=tmpd*(D->SrI[m][i-1][j]+tmp*tmpr);
-      }       //End of i
+              +0.5*dF*m/(r+0.5)*dtBydr*(D->FR[m][i][j+1]+D->FR[m][i][j]));
+        D->SrI[m][i][j]=tmpd*(prevSrI+tmp);
 
+        tmp=tmpr*(-0.5/(r+0.5)*m*dtBydr*(D->BzCI[m][i+1][j+1]+D->BzCI[m][i+1][j])
+              -dtBydr*(D->EzCR[m][i+1][j+1]-D->EzCR[m][i+1][j])
+              -2.0*M_PI*dt*D->JrR[m][i+1][j]
+              +dF*dtBydr*(D->FR[m][i+1][j+1]-D->FR[m][i+1][j]));
+        D->PlR[m][i][j]=tmpd*(D->PlR[m][i+1][j]+tmp);
+        tmp=tmpr*(0.5/(r+0.5)*m*dtBydr*(D->BzCR[m][i+1][j+1]+D->BzCR[m][i+1][j])
+              -dtBydr*(D->EzCI[m][i+1][j+1]-D->EzCI[m][i+1][j])
+              -2.0*pi*dt*D->JrI[m][i+1][j]
+              +dF*dtBydr*(D->FI[m][i+1][j+1]-D->FI[m][i+1][j]));
+        D->PlI[m][i][j]=tmpd*(D->PlI[m][i+1][j]+tmp);
+
+        tmp=tmpr*(0.5/(r+0.5)*m*dtBydr*(D->EzCI[m][i+1][j+1]+D->EzCI[m][i+1][j])
+              -dtBydr*(D->BzCR[m][i+1][j+1]-D->BzCR[m][i+1][j])
+              -M_PI*dt*(D->JpR[m][i+1][j]+D->JpR[m][i][j])
+              -0.5*dF*m/(r+0.5)*dtBydr*(D->FI[m][i+1][j+1]+D->FI[m][i+1][j]));
+        D->SlR[m][i][j]=tmpd*(D->SlR[m][i+1][j]+tmp);
+        tmp=tmpr*(-0.5/(r+0.5)*m*dtBydr*(D->EzCR[m][i+1][j+1]+D->EzCR[m][i+1][j])
+              -dtBydr*(D->BzCI[m][i+1][j+1]-D->BzCI[m][i+1][j])
+              -M_PI*dt*(D->JpI[m][i+1][j]+D->JpI[m][i][j])
+              +0.5*dF*m/(r+0.5)*dtBydr*(D->FR[m][i+1][j+1]+D->FR[m][i+1][j]));
+        D->SlI[m][i][j]=tmpd*(D->SlI[m][i+1][j]+tmp);
+      }       //End of i
     }         //End of j
-  }
 
   cenComp=D->cenComp;
   j=jstart;
@@ -904,22 +977,13 @@ void solve_Split(Domain *D,int iteration)
       D->SlR[m][i][j]=(1.0-cenComp)*D->SlR[m][i][j+1]+cenComp*D->SlR[m][i][j];
       D->SlI[m][i][j]=(1.0-cenComp)*D->SlI[m][i][j+1]+cenComp*D->SlI[m][i][j];
     }
-  
-  if(iteration<D->centerTreatment) {
-		for(i=istart; i<iend; i++) { 
-			D->PlR[0][i][j]=0.0;
-			D->SlR[0][i][j]=0.0;
-		}
-	} else ;
 
-	if(D->filter==ON && iteration%D->filterIter==0) {
-   	if(D->filterPr==ON)	filter(D,D->PrR,D->PrI);	else ;
-   	if(D->filterPl==ON)	filter(D,D->PlR,D->PlI);	else ;
-   	if(D->filterSr==ON)	filter(D,D->SrR,D->SrI);
-   	if(D->filterSl==ON)	filter(D,D->SlR,D->SlI);
-   	if(D->filterEz==ON)	filter(D,D->EzR,D->EzI);
-   	if(D->filterBz==ON)	filter(D,D->BzR,D->BzI);
-	} else ;
+  if(D->filter==ON && iteration%D->filterIter==0) {
+//    filter(D,D->PlR,D->PlI);
+//    filter(D,D->SlR,D->SlI);
+    filter(D,D->BzR,D->BzI);
+    filter(D,D->EzR,D->EzI);
+  } else ;
 
   //left boundary for Ez
 //  i=istart;

@@ -52,6 +52,7 @@ void updateCurrent(Domain D,int iteration)
   case 1 :    
 //    updateCurrent_1st(&D,nSpecies,iteration);
 //    updateCurrent_villasenor(&D,nSpecies,iteration);
+
     if(D.fieldType==Split) updateCurrent_Split_umeda(&D,nSpecies,iteration);
     else if(D.fieldType==Yee) updateCurrent_Yee_umeda(&D,nSpecies,iteration);
 	 else ;
@@ -273,7 +274,7 @@ void updateCurrent_Split_umeda(Domain *D,int nSpecies,int iteration)
                   D->JzR[m][i1][jj+j1+jstart]+=tmpZ[jj]*coss[m]*alpha;
                   D->JzI[m][i1][jj+j1+jstart]-=tmpZ[jj]*sins[m]*alpha;
                 }
-	    } else {
+	  	      } else {
               tmpZ[0]=Fz*Wr[0]*factor;
               tmpZ[1]=Fz*Wr[1]*factor;
               for(jj=0; jj<2; jj++)
@@ -283,7 +284,7 @@ void updateCurrent_Split_umeda(Domain *D,int nSpecies,int iteration)
                   D->JzR[m][i1][jj+j1+jstart]+=tmpZ[jj]*coss[m]*alpha;
                   D->JzI[m][i1][jj+j1+jstart]-=tmpZ[jj]*sins[m]*alpha;
                 }
-	    }
+	         }
             
             tmpR[0]=Fr*Wz[0]*factor;
             tmpR[1]=Fr*Wz[1]*factor;
@@ -434,7 +435,7 @@ void updateCurrent_Split_umeda(Domain *D,int nSpecies,int iteration)
             vp=coss[1]*(y2-yr)*drBydt-sins[1]*(x2-xr)*drBydt;
             factor=vp*weight*coeff[s]/(2.0*j2+1.0);
 	         if(j2==0) {
-              D->JpR[0][j2][j2+jstart]+=factor;
+              D->JpR[0][i2][j2+jstart]+=factor;
    	        if(D->currentCons==Lifschitz) {
                 for(m=1; m<numMode; m++) { 
                   D->JpR[m][i2][j2+jstart]+=factor*coss[m]*alpha;
@@ -586,7 +587,7 @@ void updateCurrent_Split_umeda(Domain *D,int nSpecies,int iteration)
               //Jp
             vp=coss[1]*(yr-y1)*drBydt-sins[1]*(xr-x1)*drBydt;
             factor=vp*weight*coeff[s]/(2.0*j1+1.0);
-            D->JpR[0][i1+ii][jj+j1+jstart]+=factor;
+            D->JpR[0][i1][j1+jstart]+=factor;
 
             if(D->currentCons==Lifschitz) {
               for(m=1; m<numMode; m++) { 
@@ -1331,27 +1332,41 @@ void calculaionRally(double *xr,double *yr,double rr,double x1,double x2,double 
 
    xc=0.5*(x1+x2);
    yc=0.5*(y1+y2);
-   if(x1!=x2)  {
+   if(x1!=x2 && xc!=0.0)  {
      alpha=yc/xc;
-     sign=xc/fabs(xc);
+//     sign=xc/fabs(xc);
+     sign=copysign(1.0,xc);
      *xr=sign*sqrt(rr*rr/(1.0+alpha*alpha));
      *yr=alpha*(*xr);
      mode=1;
-   } else { 
+   } else {
+		*xr=x1;
+		*yr=y1;
+	}
+/*	
+	else { 
      if(yc!=0.0) {
        *xr=x1; 
-       sign=yc/fabs(yc);
+//       sign=yc/fabs(yc);
+       sign=copysign(1.0,yc);
 //if(isnan(sign)) printf("sign=%g, yc=%g\n",sign,yc);
        *yr=sign*sqrt(rr*rr-x1*x1);
        mode=2;
      } else {
-       sign=x1/fabs(x1);
+//       sign=x1/fabs(x1);
+       sign=copysign(1.0,x1);
        *xr=sign*rr;
 //if(isnan(sign)) printf("sign=%g, yc=%g\n",sign,yc);
        *yr=0.0;
        mode=3;
      }
    }
+
+	if(*xr!=x1 || *yr!=y1) {
+		printf("iteration=%d, mode=%d, xr-x1=%g, yr-y1=%g\n",iteration,mode,*xr-x1,*yr-y1);
+		exit(0);
+	}
+*/	
 }
 
 

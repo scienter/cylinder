@@ -5,6 +5,8 @@
 #include "mpi.h"
 #include <time.h>
 
+void checkEnergyCons(Domain *D,int iteration,double *sumB,double *sumBz,double *sumBr,double *sumBp);
+
 int main(int argc, char *argv[])
 {
     int i,j,k,n,s,iteration=0,boost,filterStep,labSaveStep;
@@ -110,7 +112,8 @@ int main(int argc, char *argv[])
       L=L->next;
     }
 
-
+    double sumB,sumBz,sumBx,sumBy;
+	 sumB=sumBz=sumBx=sumBy=0.0;
 
     //rooping time 
     while(iteration<=D.maxStep)
@@ -147,7 +150,7 @@ int main(int argc, char *argv[])
        }  else	;
        MPI_Barrier(MPI_COMM_WORLD);
 
-//		 checkEnergyCons(&D,iteration);
+       if(D.consCheck==ON) checkEnergyCons(&D,iteration,&sumB,&sumBz,&sumBx,&sumBy); else ;
 
        //redistributing particles lala
 //       if(D.redist==ON && iteration>0) particle_redist(&D,iteration,&Ext); else;

@@ -42,7 +42,8 @@ void filter(Domain *D,double ***dataR,double ***dataI)
 
     for(m=0; m<numMode; m++)  
       for(i=istart+1; i<iend-1; i++) 
-        for(j=0; j<numY; j++) {
+        for(j=0; j<1; j++) {
+//        for(j=0; j<numY; j++) {
           dataR[m][i][j+jstart]=0.25*valR[m][i-1][j]+0.5*valR[m][i][j]+0.25*valR[m][i+1][j];
           dataI[m][i][j+jstart]=0.25*valI[m][i-1][j]+0.5*valI[m][i][j]+0.25*valI[m][i+1][j];
         }
